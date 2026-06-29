@@ -547,7 +547,9 @@ function exportarCSVClientes() {
   const a    = document.createElement('a');
   a.href = url;
   a.download = 'clientes_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
   mostrarToast(`${lista.length} clientes exportados.`, 'sucesso');
 }
