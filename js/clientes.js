@@ -505,6 +505,53 @@ async function excluirCliente(id) {
   }
 }
 
+// ── Exportar CSV ──────────────────────────────────────────────
+function exportarCSVClientes() {
+  const busca  = (document.getElementById('busca-clientes').value || '').toLowerCase();
+  const status = document.getElementById('filtro-status-clientes').value;
+  const lista  = _clientesCache.filter(c => {
+    const ok1 = !busca  || (c.nomeFantasia || '').toLowerCase().includes(busca);
+    const ok2 = !status || (c.status || 'Ativo') === status;
+    return ok1 && ok2;
+  });
+
+  if (!lista.length) { mostrarToast('Nenhum cliente para exportar.', 'aviso'); return; }
+
+  const cols = [
+    'Nome Fantasia','Razão Social','CNPJ','Setor','Subsetor','Status',
+    'Principal Nome','Principal Celular','Principal Cargo','Principal Email',
+    'Financeiro Nome','Financeiro Celular','Financeiro Cargo','Financeiro Email',
+    'Marketing Nome','Marketing Celular','Marketing Cargo','Marketing Email',
+    'Agência Nome','Agência Contato','Agência Celular','Agência Cargo','Agência Email',
+    'Instagram','Facebook','Site','WhatsApp',
+    'Endereço','CEP','Cidade','Estado',
+    'Outras Informações','Trabalhos Realizados'
+  ];
+
+  const esc = v => '"' + String(v || '').replace(/"/g, '""') + '"';
+
+  const linhas = lista.map(c => [
+    c.nomeFantasia, c.razaoSocial, c.cnpj, c.setor, c.subsetor, c.status || 'Ativo',
+    c.propNome, c.propCelular, c.propCargo, c.propEmail,
+    c.finNome, c.finCelular, c.finCargo, c.finEmail,
+    c.mktNome, c.mktCelular, c.mktCargo, c.mktEmail,
+    c.agenciaNome, c.agenciaContato, c.agenciaCelular, c.agenciaCargo, c.agenciaEmail,
+    c.instagram, c.facebook, c.site, c.whatsapp,
+    c.endereco, c.cep, c.cidade, c.estado,
+    c.outrasInformacoes, c.trabalhosRealizados
+  ].map(esc).join(';'));
+
+  const csv = '﻿' + cols.map(esc).join(';') + '\n' + linhas.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'clientes_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarToast(`${lista.length} clientes exportados.`, 'sucesso');
+}
+
 // ── Utilitário para importação (Etapa 5) ─────────────────────
 async function buscarOuCriarClientePorNome(nome) {
   if (!nome) return null;
