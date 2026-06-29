@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GestãoPro — Tribuna de Jundiaí</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ══════════════════════════════
+       TELA DE LOGIN
+  ═══════════════════════════════ -->
+  <div id="tela-login" class="login-wrapper">
+    <div class="login-card">
+      <h1 class="login-titulo">Tribuna de Jundiaí</h1>
+      <p class="login-subtitulo">Sistema de Gestão</p>
+      <form id="form-login">
+        <div class="campo">
+          <label for="login-email">E-mail</label>
+          <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email">
+        </div>
+        <div class="campo">
+          <label for="login-senha">Senha</label>
+          <input type="password" id="login-senha" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <p id="login-erro" class="erro" hidden></p>
+        <button type="submit" id="btn-entrar" class="btn btn-primario btn-block">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       APP PRINCIPAL
+  ═══════════════════════════════ -->
+  <div id="app" hidden>
+
+    <nav class="navbar">
+      <div class="navbar-marca">
+        <span class="marca-nome">Tribuna de Jundiaí</span>
+        <span class="marca-sistema">GestãoPro</span>
+      </div>
+      <div class="navbar-links">
+        <a href="#" class="nav-link ativo" data-secao="dashboard">Painel</a>
+        <a href="#" class="nav-link" data-secao="clientes">Clientes</a>
+        <a href="#" class="nav-link" data-secao="autorizacoes">Autorizações</a>
+      </div>
+      <div class="navbar-usuario">
+        <span id="usuario-email" class="text-sm text-muted"></span>
+        <button id="btn-logout" class="btn btn-outline btn-sm">Sair</button>
+      </div>
+    </nav>
+
+    <main class="conteudo">
+
+      <!-- PAINEL -->
+      <section id="secao-dashboard" class="secao ativa">
+        <div class="pagina-titulo">
+          <h2>Painel</h2>
+        </div>
+        <!-- Implementado na Etapa 7 -->
+        <div class="placeholder-secao">Painel em construção — disponível na Etapa 7.</div>
+      </section>
+
+      <!-- CLIENTES -->
+      <section id="secao-clientes" class="secao">
+        <div class="pagina-titulo">
+          <h2>Clientes</h2>
+        </div>
+        <div class="barra-acoes">
+          <div class="barra-filtros">
+            <input type="text" id="busca-clientes" class="input-busca" placeholder="Buscar por nome fantasia...">
+            <select id="filtro-status-clientes" class="select-filtro">
+              <option value="">Todos os status</option>
+              <option value="Ativo">Ativo</option>
+              <option value="Inativo">Inativo</option>
+              <option value="Prospect">Prospect</option>
+            </select>
+          </div>
+          <button class="btn btn-primario" onclick="abrirModalCliente()">+ Novo Cliente</button>
+        </div>
+        <div id="clientes-lista"></div>
+      </section>
+
+      <!-- AUTORIZAÇÕES -->
+      <section id="secao-autorizacoes" class="secao">
+        <div class="pagina-titulo">
+          <h2>Autorizações de Veiculação</h2>
+        </div>
+        <div class="barra-acoes">
+          <div class="barra-filtros">
+            <select id="filtro-cliente-autorizacoes" class="select-filtro">
+              <option value="">Todos os clientes</option>
+            </select>
+            <select id="filtro-ano-autorizacoes" class="select-filtro">
+              <option value="">Todos os anos</option>
+            </select>
+            <select id="filtro-status-autorizacoes" class="select-filtro">
+              <option value="">Todos os status</option>
+              <option value="Proposta">Proposta</option>
+              <option value="Autorizada">Autorizada</option>
+              <option value="Faturada">Faturada</option>
+              <option value="Paga">Paga</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+          <button class="btn btn-primario" onclick="abrirModalAutorizacao()">+ Nova Autorização</button>
+          <button class="btn btn-outline" onclick="abrirModalImportarCSV()">⬆ Importar CSV</button>
+          <button class="btn btn-outline" onclick="exportarCSVAutorizacoes()">⬇ Exportar CSV</button>
+          <button class="btn btn-perigo btn-outline-perigo" onclick="confirmarApagarTodas()">Apagar todos</button>
+        </div>
+        <div id="autorizacoes-totais" class="barra-totais" hidden></div>
+        <div id="autorizacoes-lista"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast de notificação -->
+  <div id="toast"></div>
+
+  <!-- Logo para PDF (carregado silenciosamente) -->
+  <img id="logo-pdf" src="img/logo.png" style="display:none" alt="">
+
+  <!-- ══════════════════════════════
+       Firebase SDKs (compat v10)
+  ═══════════════════════════════ -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Scripts da aplicação -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/clientes.js"></script>
+  <script src="js/autorizacoes.js"></script>
+  <script src="js/drive.js"></script>
+  <script src="js/pdf.js"></script>
+
+  <!-- Google Identity Services (Drive) — carrega após os scripts da aplicação -->
+  <script src="https://accounts.google.com/gsi/client" onload="inicializarDrive()" async defer></script>
+  <script src="js/dashboard.js"></script>
+
+</body>
+</html>
