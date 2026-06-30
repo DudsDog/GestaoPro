@@ -719,6 +719,85 @@ tr:hover td { background: var(--cinza-100); }
   background: var(--branco);
 }
 
+/* ── Aba Produto (propostas) ──────────────────────────────── */
+.sobre-chk-prod {
+  padding: 10px 14px;
+  background: #fff8f0;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.sobre-chk-prod label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #b84800; }
+
+.prod-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.btn-prod-toggle {
+  padding: 6px 12px;
+  border: 1px solid var(--cinza-300);
+  border-radius: 20px;
+  background: var(--branco);
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--cinza-700);
+  transition: all .15s;
+}
+.btn-prod-toggle:hover { background: var(--cinza-100); }
+.btn-prod-toggle.ativo {
+  background: var(--laranja);
+  border-color: var(--laranja);
+  color: var(--branco);
+  font-weight: 600;
+}
+
+.prod-editavel {
+  border: 1px solid var(--cinza-200);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.prod-editavel-header {
+  background: var(--cinza-100);
+  padding: 10px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--cinza-200);
+  color: var(--cinza-700);
+}
+.prod-editavel-blocos { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+.bloco-ed { display: flex; flex-direction: column; gap: 4px; }
+.bloco-ed-campo { display: flex; flex-direction: column; gap: 4px; }
+.bloco-ed-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--cinza-500);
+}
+.bloco-ed-input,
+.bloco-ed-textarea {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--cinza-300);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--cinza-900);
+  resize: vertical;
+  transition: border-color .15s;
+}
+.bloco-ed-input:focus,
+.bloco-ed-textarea:focus {
+  outline: none;
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px rgba(229,90,0,.12);
+}
+.bloco-ed-lista { margin-top: 4px; }
+
 .th-grupo {
   background: var(--azul-claro);
   color: var(--azul-escuro);

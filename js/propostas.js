@@ -6,6 +6,30 @@ let _propostasListener  = null;
 let _propostasCache     = [];
 let _sortPropColuna     = 'numeroPR';
 let _sortPropDirecao    = 'desc';
+let _produtosPropState  = { keys: [], cache: {} };
+
+const _PROD_LIST = [
+  { key: '1',  label: '1 — Publieditorial' },
+  { key: '2',  label: '2 — Branded Content' },
+  { key: '3',  label: '3 — Conteúdo em Vídeo' },
+  { key: '4',  label: '4 — Cobertura de Evento' },
+  { key: '5',  label: '5 — Postagens Mídias Sociais' },
+  { key: '6',  label: '6 — Carrossel de Conteúdo' },
+  { key: '7a', label: '7a — Banner Header (Home)' },
+  { key: '7b', label: '7b — Banner Middle Page (Home)' },
+  { key: '7c', label: '7c — Banner Aside (Home)' },
+  { key: '7d', label: '7d — Banner Header (Editorias)' },
+  { key: '7e', label: '7e — Banner In-Feed (Editorias)' },
+  { key: '7f', label: '7f — Banner Aside (Editorias)' },
+  { key: '7g', label: '7g — Banner Header (Matéria)' },
+  { key: '7h', label: '7h — Banner In-Text (Matérias)' },
+  { key: '7i', label: '7i — Banner Aside (Matérias)' },
+  { key: '7j', label: '7j — Banner por CPM' },
+  { key: '8',  label: '8 — Pacote Tribuna 1' },
+  { key: '9',  label: '9 — Pacote Tribuna 2' },
+  { key: '10', label: '10 — Divulgação de Vaga' },
+  { key: '11', label: '11 — Publicidade Legal' },
+];
 
 // ── Carregamento ──────────────────────────────────────────────
 function carregarPropostas() {
@@ -143,6 +167,108 @@ function renderizarPropostas(lista) {
     </p>`;
 }
 
+// ── Aba Produto ───────────────────────────────────────────────
+function _getProdutoByKey(key) {
+  if (typeof _BANNERS !== 'undefined' && _BANNERS[key]) return _BANNERS[key];
+  if (typeof _PRODUTOS !== 'undefined' && _PRODUTOS[key]) return _PRODUTOS[key];
+  return null;
+}
+
+function _blocoEdHtml(b, bi) {
+  let h = `<div class="bloco-ed" data-bi="${bi}">`;
+  if (b.titulo !== undefined) {
+    h += `<div class="bloco-ed-campo">
+      <span class="bloco-ed-label">Título</span>
+      <input type="text" class="bloco-ed-input" data-tipo="titulo" value="${escapeHtml(b.titulo)}">
+    </div>`;
+  }
+  if (b.texto !== undefined) {
+    h += `<div class="bloco-ed-campo">
+      <span class="bloco-ed-label">Texto</span>
+      <textarea class="bloco-ed-textarea" data-tipo="texto" rows="3">${escapeHtml(b.texto)}</textarea>
+    </div>`;
+  }
+  if (b.lista) {
+    h += `<div class="bloco-ed-campo">
+      <span class="bloco-ed-label">Itens da lista</span>
+      ${b.lista.map((item, li) =>
+        `<textarea class="bloco-ed-textarea bloco-ed-lista" data-tipo="lista" data-li="${li}" rows="2">${escapeHtml(item)}</textarea>`
+      ).join('')}
+    </div>`;
+  }
+  return h + '</div>';
+}
+
+function toggleProdutoProp(key) {
+  const idx = _produtosPropState.keys.indexOf(key);
+  if (idx !== -1) {
+    const item = _lerEditsProduto(key);
+    if (item) _produtosPropState.cache[key] = item;
+    _produtosPropState.keys.splice(idx, 1);
+    const el = document.querySelector(`.prod-editavel[data-key="${key}"]`);
+    if (el) el.remove();
+  } else {
+    _produtosPropState.keys.push(key);
+    _appendProdutoEditavel(key);
+  }
+  document.querySelectorAll('.btn-prod-toggle').forEach(btn => {
+    btn.classList.toggle('ativo', _produtosPropState.keys.includes(btn.dataset.key));
+  });
+}
+
+function _appendProdutoEditavel(key) {
+  const container = document.getElementById('prod-editaveis-prop');
+  if (!container) return;
+  const src = _getProdutoByKey(key);
+  if (!src) return;
+  const cached = _produtosPropState.cache[key];
+  const blocos = cached ? JSON.parse(JSON.stringify(cached.blocos)) : JSON.parse(JSON.stringify(src.blocos));
+  const num = _produtosPropState.keys.indexOf(key) + 1;
+  const div = document.createElement('div');
+  div.className = 'prod-editavel';
+  div.dataset.key = key;
+  div.innerHTML = `
+    <div class="prod-editavel-header">
+      <strong>${num} — ${src.nome}</strong>
+    </div>
+    <div class="prod-editavel-blocos">
+      ${blocos.map((b, bi) => _blocoEdHtml(b, bi)).join('')}
+    </div>`;
+  container.appendChild(div);
+}
+
+function _lerEditsProduto(key) {
+  const el = document.querySelector(`.prod-editavel[data-key="${key}"]`);
+  if (!el) return _produtosPropState.cache[key] || null;
+  const src = _getProdutoByKey(key);
+  if (!src) return null;
+  const blocos = JSON.parse(JSON.stringify(src.blocos));
+  el.querySelectorAll('.bloco-ed').forEach(blocoEl => {
+    const bi = parseInt(blocoEl.dataset.bi);
+    const b = blocos[bi];
+    if (!b) return;
+    const tEl = blocoEl.querySelector('[data-tipo="titulo"]');
+    if (tEl && b.titulo !== undefined) b.titulo = tEl.value;
+    const xEl = blocoEl.querySelector('[data-tipo="texto"]');
+    if (xEl && b.texto !== undefined) b.texto = xEl.value;
+    blocoEl.querySelectorAll('[data-tipo="lista"]').forEach((lEl, li) => {
+      if (b.lista && b.lista[li] !== undefined) b.lista[li] = lEl.value;
+    });
+  });
+  return { key, nome: src.nome, blocos };
+}
+
+function _initProdutoTab(p) {
+  _produtosPropState = { keys: [], cache: {} };
+  (p.produtosSelecionados || []).forEach(item => {
+    _produtosPropState.keys.push(item.key);
+    _produtosPropState.cache[item.key] = item;
+  });
+  _produtosPropState.keys.forEach(key => _appendProdutoEditavel(key));
+  const chk = document.getElementById('chk-sobre-prop');
+  if (chk) chk.checked = !!p.incluirSobre;
+}
+
 // ── Modal ─────────────────────────────────────────────────────
 async function abrirModalProposta(id) {
   const base   = id ? (_propostasCache.find(x => x.id === id) || {}) : {};
@@ -175,6 +301,8 @@ async function abrirModalProposta(id) {
         onclick="mudarTabProp(this,'ftab-prop-camp')">Campanha</button>
       <button type="button" class="form-tab"
         onclick="mudarTabProp(this,'ftab-prop-cont')">Agência / Contato</button>
+      <button type="button" class="form-tab"
+        onclick="mudarTabProp(this,'ftab-prop-prod')">Produto</button>
     </div>
 
     <form id="form-proposta" onsubmit="return false">
@@ -236,9 +364,14 @@ async function abrirModalProposta(id) {
           <input type="text" name="quantidade" value="${v('quantidade')}">
         </div>
         <div class="campo">
-          <label>Data de Postagem</label>
-          <input type="date" name="dataPostagem"
-            value="${p.dataPostagem ? tsParaInputDate(p.dataPostagem) : ''}">
+          <label>Início</label>
+          <input type="date" name="dataInicio"
+            value="${p.dataInicio ? tsParaInputDate(p.dataInicio) : ''}">
+        </div>
+        <div class="campo">
+          <label>Término</label>
+          <input type="date" name="dataTermino"
+            value="${p.dataTermino ? tsParaInputDate(p.dataTermino) : ''}">
         </div>
         <div class="campo">
           <label>Responsável</label>
@@ -278,6 +411,20 @@ async function abrirModalProposta(id) {
         </div>
       </div>
 
+      <!-- Produto -->
+      <div id="ftab-prop-prod" class="tab-painel" hidden>
+        <div class="sobre-chk-prod">
+          <label>
+            <input type="checkbox" id="chk-sobre-prop">
+            Incluir <strong>Sobre a Tribuna</strong> no PDF
+          </label>
+        </div>
+        <div class="prod-botoes">
+          ${_PROD_LIST.map(pr => `<button type="button" class="btn-prod-toggle" data-key="${pr.key}" onclick="toggleProdutoProp('${pr.key}')">${pr.label}</button>`).join('')}
+        </div>
+        <div id="prod-editaveis-prop"></div>
+      </div>
+
     </form>`;
 
   const rodape = `
@@ -285,6 +432,7 @@ async function abrirModalProposta(id) {
     <button class="btn btn-primario" onclick="salvarProposta('${id||''}')">Salvar</button>`;
 
   criarModal('proposta', titulo, corpo, rodape, false);
+  _initProdutoTab(p);
 }
 
 function mudarTabProp(btn, painelId) {
@@ -327,7 +475,8 @@ async function salvarProposta(id) {
     valorProposta:  parsearValor(form.querySelector('[name="valorPropostaTexto"]').value),
     descricao:      form.querySelector('[name="descricao"]').value.trim(),
     quantidade:     form.querySelector('[name="quantidade"]').value.trim(),
-    dataPostagem:   inputDateParaTimestamp(form.querySelector('[name="dataPostagem"]').value),
+    dataInicio:     inputDateParaTimestamp(form.querySelector('[name="dataInicio"]').value),
+    dataTermino:    inputDateParaTimestamp(form.querySelector('[name="dataTermino"]').value),
     responsavel:    form.querySelector('[name="responsavel"]').value.trim(),
     conta:          form.querySelector('[name="conta"]').value.trim(),
     observacoes:    form.querySelector('[name="observacoes"]').value.trim(),
@@ -335,7 +484,9 @@ async function salvarProposta(id) {
     piPoAf:         form.querySelector('[name="piPoAf"]').value.trim(),
     contato:        form.querySelector('[name="contato"]').value.trim(),
     emailContato:   form.querySelector('[name="emailContato"]').value.trim(),
-    clienteDetalhe: form.querySelector('[name="clienteDetalhe"]').value.trim(),
+    clienteDetalhe:      form.querySelector('[name="clienteDetalhe"]').value.trim(),
+    produtosSelecionados: _produtosPropState.keys.map(k => _lerEditsProduto(k)).filter(Boolean),
+    incluirSobre:         document.getElementById('chk-sobre-prop')?.checked || false,
   };
 
   const btnSalvar = document.querySelector('#overlay-proposta .btn-primario');
@@ -385,7 +536,8 @@ async function _criarAutorizacaoDeProposta(dados) {
     conta:          dados.conta,
     clienteDetalhe: dados.clienteDetalhe,
     quantidade:     dados.quantidade,
-    dataPostagem:   dados.dataPostagem,
+    dataInicio:     dados.dataInicio,
+    dataTermino:    dados.dataTermino,
     responsavel:    dados.responsavel,
     observacoes:    dados.observacoes,
     valorProposta:  dados.valorProposta,

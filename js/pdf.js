@@ -232,8 +232,63 @@ const _SOBRE_TRIBUNA = {
   ]
 };
 
+// ── Geração de PDF com produtos já definidos na proposta ──────
+function _selecionarContatoEGerar(id, proposta) {
+  const conteudo = `
+    <p style="font-size:13px;color:#64748b;margin-bottom:12px">
+      ${proposta.produtosSelecionados.length} produto(s) selecionado(s) na proposta.
+    </p>
+    <div style="padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+      <p style="font-size:12px;font-weight:600;margin-bottom:8px;color:#374151">Contato no PDF:</p>
+      <label class="banner-pdf-check">
+        <input type="checkbox" name="pdf-contato-prop" value="agencia" checked> Agência de Propaganda
+      </label>
+      <label class="banner-pdf-check">
+        <input type="checkbox" name="pdf-contato-prop" value="principal"> Principal
+      </label>
+    </div>`;
+
+  const rodape = `
+    <button class="btn btn-outline" onclick="fecharModal('pdf-contato-prop')">Cancelar</button>
+    <button class="btn btn-primario" onclick="_gerarPDFComProdutosSalvos('${id}')">Gerar PDF</button>`;
+
+  criarModal('pdf-contato-prop', 'Gerar PDF', conteudo, rodape);
+}
+
+function _gerarPDFComProdutosSalvos(id) {
+  const proposta = (_propostasCache || []).find(x => x.id === id);
+  if (!proposta) return;
+
+  const contatosSel = [...document.querySelectorAll('input[name="pdf-contato-prop"]:checked')]
+    .map(c => c.value);
+
+  fecharModal('pdf-contato-prop');
+
+  const itens = proposta.produtosSelecionados.map(item => ({
+    nome:   item.nome,
+    blocos: JSON.parse(JSON.stringify(item.blocos)),
+  }));
+
+  if (proposta.incluirSobre) {
+    itens.unshift({
+      nome:    _SOBRE_TRIBUNA.nome,
+      isSobre: true,
+      blocos:  JSON.parse(JSON.stringify(_SOBRE_TRIBUNA.blocos)),
+    });
+  }
+
+  gerarPDFAutorizacao(id, null, null, contatosSel, itens);
+}
+
 // ── Modal de seleção de produto ───────────────────────────────
 function selecionarProdutoPDF(id) {
+  // Se a proposta já tem produtos definidos na aba Produto, vai direto para geração
+  const reg = (_propostasCache || []).find(x => x.id === id);
+  if (reg && reg.produtosSelecionados && reg.produtosSelecionados.length) {
+    _selecionarContatoEGerar(id, reg);
+    return;
+  }
+
   const produtos = [
     { k: '1',  label: '1 — Publieditorial' },
     { k: '2',  label: '2 — Conteúdo Personalizado (Branded Content)' },
@@ -712,13 +767,17 @@ function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel, itensEditados)
   const temB = a.valorBruto != null && !isNaN(a.valorBruto);
   const temL = a.valor      != null && !isNaN(a.valor);
 
+  const valorExibir = (a.valorProposta != null && !isNaN(Number(a.valorProposta)))
+    ? a.valorProposta
+    : (a.valor || a.valorBruto);
+
   if (temB && temL && Number(a.valorBruto) !== Number(a.valor)) {
     tx('Investimento Bruto Total: ' + fmt.moeda(a.valorBruto), colL, y, { bold: true, size: 10.5 });
     y += 6;
     tx('Investimento Líquido: ' + fmt.moeda(a.valor), colL, y, { bold: true, size: 10.5 });
     y += 6;
   } else {
-    tx('Investimento: ' + fmt.moeda(a.valor || a.valorBruto), colL, y, { bold: true, size: 10.5 });
+    tx('Investimento: ' + fmt.moeda(valorExibir), colL, y, { bold: true, size: 10.5 });
     y += 6;
   }
   if (fmt.data(a.dataPagamento)) {
