@@ -164,11 +164,11 @@ function _sortKeyPR(str) {
   return parseInt(m[2]) * 100000 + parseInt(m[1]); // ano*100000 + nº
 }
 
-function _thSort(col, label) {
+function _thSort(col, label, classe) {
   const ativo = _sortColuna === col;
   const seta  = ativo ? (_sortDirecao === 'asc' ? ' ▲' : ' ▼') : '';
-  return `<th class="th-sortable${ativo ? ' th-sort-ativo' : ''}"
-    onclick="ordenarPor('${col}')">${label}${seta}</th>`;
+  const cls   = ['th-sortable', ativo ? 'th-sort-ativo' : '', classe || ''].filter(Boolean).join(' ');
+  return `<th class="${cls}" onclick="ordenarPor('${col}')">${label}${seta}</th>`;
 }
 
 // ── Renderização ─────────────────────────────────────────────
@@ -215,8 +215,9 @@ function renderizarAutorizacoes(lista) {
       <table class="tabela-autorizacoes">
         <thead>
           <tr>
-            ${_thSort('clienteNome',    'Cliente')}
-            ${_thSort('numeroPR',       'Nº PR / Proposta')}
+            ${_thSort('clienteNome',    'Cliente',   'col-sticky-1')}
+            ${_thSort('numeroPR',       'Nº PR / Proposta', 'col-sticky-2')}
+            ${_thSort('descricao',      'Descrição / Campanha')}
             ${_thSort('piPoAf',         'PI/PO/AF')}
             ${_thSort('valorProposta',  'Val. Proposta')}
             ${_thSort('valorBruto',     'Val. Bruto')}
@@ -226,7 +227,6 @@ function renderizarAutorizacoes(lista) {
             ${_thSort('nf',             'NF')}
             ${_thSort('dataEmissaoNF',  'Dt. Emissão NF')}
             ${_thSort('dataPagamento',  'Dt. Pagamento')}
-            ${_thSort('descricao',      'Descrição / Campanha')}
             ${_thSort('agencia',       'Agência')}
             <th>Contato</th>
             <th>Conta</th>
@@ -243,8 +243,9 @@ function renderizarAutorizacoes(lista) {
         <tbody>
           ${sorted.map(a => `
             <tr>
-              <td class="nowrap"><strong>${d(a.clienteNome)}</strong></td>
-              <td class="nowrap text-sm">${d(a.numeroPR)}</td>
+              <td class="nowrap col-sticky-1"><strong>${d(a.clienteNome)}</strong></td>
+              <td class="nowrap text-sm col-sticky-2">${d(a.numeroPR)}</td>
+              <td class="text-sm td-descricao">${d(a.descricao || a.produto)}</td>
               <td class="nowrap text-sm">${d(a.piPoAf)}</td>
               <td class="td-valor text-sm">${mo(a.valorProposta)}</td>
               <td class="td-valor text-sm">${mo(a.valorBruto)}</td>
@@ -254,7 +255,6 @@ function renderizarAutorizacoes(lista) {
               <td class="text-sm">${d(a.nf)}</td>
               <td class="nowrap text-sm">${dt(a.dataEmissaoNF)}</td>
               <td class="nowrap text-sm">${dt(a.dataPagamento)}</td>
-              <td class="text-sm td-descricao">${d(a.descricao || a.produto)}</td>
               <td class="text-sm">${d(a.agencia)}</td>
               <td class="text-sm">${d(a.contato)}</td>
               <td class="text-sm">${d(a.conta)}</td>
@@ -419,16 +419,30 @@ async function abrirModalAutorizacao(id) {
           <label>Links de Publicação</label>
           <table class="tabela-links">
             <thead>
-              <tr><th style="width:160px">Data</th><th>Link / URL</th></tr>
-            </thead>
-            <tbody>
-              ${[1,2,3,4,5].map(n => `
               <tr>
-                <td><input type="date" name="dataLink${n}" value="${a['dataLink'+n] ? tsParaInputDate(a['dataLink'+n]) : ''}"></td>
-                <td><input type="url" name="urlLink${n}" value="${escapeHtml(a['urlLink'+n] || '')}" placeholder="https://..."></td>
+                <th style="width:150px">Data</th>
+                <th style="width:140px">Plataforma</th>
+                <th>Link / URL</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-links-pub">
+              ${((a.linksPublicacao && a.linksPublicacao.length) ? a.linksPublicacao : [{},{},{}]).map(l => `
+              <tr>
+                <td><input type="date" class="link-data" value="${l.data ? tsParaInputDate(l.data) : ''}"></td>
+                <td>
+                  <select class="link-plataforma">
+                    <option value="">—</option>
+                    <option value="Site"      ${l.plataforma==='Site'      ?'selected':''}>Site</option>
+                    <option value="Instagram" ${l.plataforma==='Instagram' ?'selected':''}>Instagram</option>
+                    <option value="Facebook"  ${l.plataforma==='Facebook'  ?'selected':''}>Facebook</option>
+                    <option value="Outros"    ${l.plataforma==='Outros'    ?'selected':''}>Outros</option>
+                  </select>
+                </td>
+                <td><input type="url" class="link-url" value="${escapeHtml(l.url||'')}" placeholder="https://..."></td>
               </tr>`).join('')}
             </tbody>
           </table>
+          <button type="button" class="btn btn-outline btn-sm" onclick="adicionarLinhaPublicacao()" style="margin-top:8px">+ Adicionar linha</button>
         </div>
       </div>
 
@@ -521,16 +535,11 @@ async function salvarAutorizacao(id) {
     descricao:     form.querySelector('[name="descricao"]').value.trim(),
     quantidade:    form.querySelector('[name="quantidade"]').value.trim(),
     dataPostagem:  inputDateParaTimestamp(form.querySelector('[name="dataPostagem"]').value),
-    dataLink1: inputDateParaTimestamp(form.querySelector('[name="dataLink1"]').value),
-    urlLink1:  form.querySelector('[name="urlLink1"]').value.trim(),
-    dataLink2: inputDateParaTimestamp(form.querySelector('[name="dataLink2"]').value),
-    urlLink2:  form.querySelector('[name="urlLink2"]').value.trim(),
-    dataLink3: inputDateParaTimestamp(form.querySelector('[name="dataLink3"]').value),
-    urlLink3:  form.querySelector('[name="urlLink3"]').value.trim(),
-    dataLink4: inputDateParaTimestamp(form.querySelector('[name="dataLink4"]').value),
-    urlLink4:  form.querySelector('[name="urlLink4"]').value.trim(),
-    dataLink5: inputDateParaTimestamp(form.querySelector('[name="dataLink5"]').value),
-    urlLink5:  form.querySelector('[name="urlLink5"]').value.trim(),
+    linksPublicacao: [...form.querySelectorAll('#tbody-links-pub tr')].map(row => ({
+      data:       inputDateParaTimestamp((row.querySelector('.link-data')?.value) || ''),
+      plataforma: row.querySelector('.link-plataforma')?.value || '',
+      url:        (row.querySelector('.link-url')?.value || '').trim(),
+    })).filter(l => l.data || l.plataforma || l.url),
     agencia:       form.querySelector('[name="agencia"]').value.trim(),
     contato:       form.querySelector('[name="contato"]').value.trim(),
     conta:         form.querySelector('[name="conta"]').value.trim(),
@@ -656,6 +665,26 @@ function parsearValor(str) {
 
   const n = parseFloat(limpo);
   return isNaN(n) ? null : n;
+}
+
+// ── Links de Publicação dinâmicos ────────────────────────────
+function adicionarLinhaPublicacao() {
+  const tbody = document.getElementById('tbody-links-pub');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="date" class="link-data"></td>
+    <td>
+      <select class="link-plataforma">
+        <option value="">—</option>
+        <option value="Site">Site</option>
+        <option value="Instagram">Instagram</option>
+        <option value="Facebook">Facebook</option>
+        <option value="Outros">Outros</option>
+      </select>
+    </td>
+    <td><input type="url" class="link-url" placeholder="https://..."></td>`;
+  tbody.appendChild(tr);
 }
 
 // ── Apagar todos ─────────────────────────────────────────────

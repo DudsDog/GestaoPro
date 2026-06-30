@@ -53,11 +53,11 @@ function ordenarPropostaPor(coluna) {
   filtrarPropostas();
 }
 
-function _thSortProp(col, label) {
+function _thSortProp(col, label, classe) {
   const ativo = _sortPropColuna === col;
   const seta  = ativo ? (_sortPropDirecao === 'asc' ? ' ▲' : ' ▼') : '';
-  return `<th class="th-sortable${ativo ? ' th-sort-ativo' : ''}"
-    onclick="ordenarPropostaPor('${col}')">${label}${seta}</th>`;
+  const cls   = ['th-sortable', ativo ? 'th-sort-ativo' : '', classe || ''].filter(Boolean).join(' ');
+  return `<th class="${cls}" onclick="ordenarPropostaPor('${col}')">${label}${seta}</th>`;
 }
 
 function _valorOrdenacaoProp(p, col) {
@@ -104,12 +104,12 @@ function renderizarPropostas(lista) {
       <table class="tabela-autorizacoes">
         <thead>
           <tr>
-            ${_thSortProp('numeroPR',      'Nº PR / Proposta')}
-            ${_thSortProp('clienteNome',   'Cliente')}
+            ${_thSortProp('clienteNome',   'Cliente', 'col-sticky-1')}
+            ${_thSortProp('numeroPR',      'Nº PR / Proposta', 'col-sticky-2')}
+            <th>Descrição / Campanha</th>
             ${_thSortProp('valorProposta', 'Val. Proposta')}
             ${_thSortProp('mesReferencia', 'Mês Ref.')}
             ${_thSortProp('anoReferencia', 'Ano')}
-            <th>Descrição / Campanha</th>
             <th>Agência</th>
             ${_thSortProp('status', 'Status')}
             <th></th>
@@ -118,12 +118,12 @@ function renderizarPropostas(lista) {
         <tbody>
           ${sorted.map(p => `
             <tr>
-              <td class="nowrap text-sm">${d(p.numeroPR)}</td>
-              <td class="nowrap"><strong>${d(p.clienteNome)}</strong></td>
+              <td class="nowrap col-sticky-1"><strong>${d(p.clienteNome)}</strong></td>
+              <td class="nowrap text-sm col-sticky-2">${d(p.numeroPR)}</td>
+              <td class="text-sm td-descricao">${d(p.descricao)}</td>
               <td class="td-valor text-sm">${mo(p.valorProposta)}</td>
               <td class="text-sm">${d(p.mesReferencia)}</td>
               <td class="text-sm">${d(p.anoReferencia)}</td>
-              <td class="text-sm td-descricao">${d(p.descricao)}</td>
               <td class="text-sm">${d(p.agencia)}</td>
               <td>${badgeStatusProposta(p.status || 'Em aberto')}</td>
               <td class="td-acoes">

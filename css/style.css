@@ -8,6 +8,8 @@
   --azul:        #1a56db;
   --azul-escuro: #1e429f;
   --azul-claro:  #e8f0fe;
+  --laranja:        #e55a00;
+  --laranja-escuro: #b84800;
   --verde:       #057a55;
   --vermelho:    #e02424;
   --amarelo:     #c27803;
@@ -48,7 +50,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a56db 0%, #1e429f 100%);
+  background: linear-gradient(135deg, #e55a00 0%, #b84800 100%);
   padding: 20px;
 }
 
@@ -64,7 +66,7 @@ body {
 .login-titulo {
   font-size: 20px;
   font-weight: 700;
-  color: var(--azul-escuro);
+  color: var(--laranja-escuro);
   text-align: center;
   line-height: 1.3;
 }
@@ -77,6 +79,15 @@ body {
   text-transform: uppercase;
   letter-spacing: .06em;
 }
+
+.login-card .campo input:focus {
+  outline: none;
+  border-color: var(--laranja);
+  box-shadow: 0 0 0 3px rgba(229,90,0,.12);
+}
+
+.login-card .btn-primario { background: var(--laranja); }
+.login-card .btn-primario:hover:not(:disabled) { background: var(--laranja-escuro); }
 
 /* ════════════════════════════════════════
    NAVBAR
@@ -693,10 +704,19 @@ tr:hover td { background: var(--cinza-100); }
   font-size: 13px;
   background: var(--branco);
 }
-.tabela-links td input:focus {
+.tabela-links td input:focus,
+.tabela-links td select:focus {
   outline: none;
   border-color: var(--azul);
   box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+.tabela-links td select {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--cinza-300);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--branco);
 }
 
 .th-grupo {
@@ -717,6 +737,21 @@ tr:hover td { background: var(--cinza-100); }
   background: var(--azul-claro);
   z-index: 2;
 }
+
+/* Colunas fixas da tabela de autorizações */
+.tabela-autorizacoes .col-sticky-1,
+.tabela-autorizacoes .col-sticky-2 {
+  position: sticky;
+  z-index: 1;
+  background: var(--branco);
+}
+.tabela-autorizacoes thead .col-sticky-1,
+.tabela-autorizacoes thead .col-sticky-2 {
+  background: var(--azul-claro);
+  z-index: 2;
+}
+.tabela-autorizacoes .col-sticky-1 { left: 0; }
+.tabela-autorizacoes .col-sticky-2 { left: 160px; box-shadow: 2px 0 5px rgba(0,0,0,.07); }
 
 .td-grupo {
   cursor: pointer;

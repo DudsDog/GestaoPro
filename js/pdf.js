@@ -664,12 +664,15 @@ function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel, itensEditados)
 
   // ref
   const piRef = a.piPoAf ? ' - ' + a.piPoAf : '';
-  tx('Ref. Proposta de Divulgação' + piRef, colL, y, { size: 12, color: LARANJA });
-  y += 6;
+  const refLabel = 'Ref. Proposta de Divulgação' + piRef + ' -';
+  tx(refLabel, colL, y, { size: 12, color: LARANJA });
   if (fmt.str(a.descricao)) {
-    tx(a.descricao, colL, y, { bold: true, size: 11 });
-    y += 8;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    const larguraRef = doc.getTextWidth(refLabel + '  ');
+    tx(a.descricao, colL + larguraRef, y, { bold: true, size: 12 });
   }
+  y += 8;
 
   // ── seção de itens ──
   const itensParaPDF = itensEditados || _construirItens(produto, subOpcoes);
