@@ -446,7 +446,7 @@ function abrirModalCliente(id) {
     <button class="btn btn-secundario" onclick="fecharModal('cliente')">Cancelar</button>
     <button class="btn btn-primario" onclick="salvarCliente('${id||''}')">Salvar</button>`;
 
-  criarModal('cliente', titulo, corpo, rodape);
+  criarModal('cliente', titulo, corpo, rodape, false);
 }
 
 // ── Troca de aba no formulário ────────────────────────────────

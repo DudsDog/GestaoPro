@@ -136,7 +136,7 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function criarModal(id, titulo, conteudo, rodape) {
+function criarModal(id, titulo, conteudo, rodape, fecharFora = true) {
   fecharModal(id);
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -150,7 +150,9 @@ function criarModal(id, titulo, conteudo, rodape) {
       <div class="modal-corpo">${conteudo}</div>
       <div class="modal-rodape">${rodape}</div>
     </div>`;
-  overlay.addEventListener('click', e => { if (e.target === overlay) fecharModal(id); });
+  if (fecharFora) {
+    overlay.addEventListener('click', e => { if (e.target === overlay) fecharModal(id); });
+  }
   document.body.appendChild(overlay);
 }
 
