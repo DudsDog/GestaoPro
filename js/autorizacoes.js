@@ -416,8 +416,19 @@ async function abrirModalAutorizacao(id) {
             value="${a.dataPostagem ? tsParaInputDate(a.dataPostagem) : ''}">
         </div>
         <div class="campo campo-full">
-          <label>Observações</label>
-          <textarea name="observacoes" rows="2">${escapeHtml(a.observacoes || '')}</textarea>
+          <label>Links de Publicação</label>
+          <table class="tabela-links">
+            <thead>
+              <tr><th style="width:160px">Data</th><th>Link / URL</th></tr>
+            </thead>
+            <tbody>
+              ${[1,2,3,4,5].map(n => `
+              <tr>
+                <td><input type="date" name="dataLink${n}" value="${a['dataLink'+n] ? tsParaInputDate(a['dataLink'+n]) : ''}"></td>
+                <td><input type="url" name="urlLink${n}" value="${escapeHtml(a['urlLink'+n] || '')}" placeholder="https://..."></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -510,7 +521,16 @@ async function salvarAutorizacao(id) {
     descricao:     form.querySelector('[name="descricao"]').value.trim(),
     quantidade:    form.querySelector('[name="quantidade"]').value.trim(),
     dataPostagem:  inputDateParaTimestamp(form.querySelector('[name="dataPostagem"]').value),
-    observacoes:   form.querySelector('[name="observacoes"]').value.trim(),
+    dataLink1: inputDateParaTimestamp(form.querySelector('[name="dataLink1"]').value),
+    urlLink1:  form.querySelector('[name="urlLink1"]').value.trim(),
+    dataLink2: inputDateParaTimestamp(form.querySelector('[name="dataLink2"]').value),
+    urlLink2:  form.querySelector('[name="urlLink2"]').value.trim(),
+    dataLink3: inputDateParaTimestamp(form.querySelector('[name="dataLink3"]').value),
+    urlLink3:  form.querySelector('[name="urlLink3"]').value.trim(),
+    dataLink4: inputDateParaTimestamp(form.querySelector('[name="dataLink4"]').value),
+    urlLink4:  form.querySelector('[name="urlLink4"]').value.trim(),
+    dataLink5: inputDateParaTimestamp(form.querySelector('[name="dataLink5"]').value),
+    urlLink5:  form.querySelector('[name="urlLink5"]').value.trim(),
     agencia:       form.querySelector('[name="agencia"]').value.trim(),
     contato:       form.querySelector('[name="contato"]').value.trim(),
     conta:         form.querySelector('[name="conta"]').value.trim(),

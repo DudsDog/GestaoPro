@@ -669,6 +669,36 @@ tr:hover td { background: var(--cinza-100); }
    TABELA DE CLIENTES — colunas expansíveis
 ════════════════════════════════════════ */
 
+.tabela-links {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.tabela-links th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--cinza-600);
+  padding: 4px 6px 6px;
+  border-bottom: 1px solid var(--cinza-200);
+  font-size: 12px;
+}
+.tabela-links td {
+  padding: 3px 4px;
+}
+.tabela-links td input {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--cinza-300);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--branco);
+}
+.tabela-links td input:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+
 .th-grupo {
   background: var(--azul-claro);
   color: var(--azul-escuro);

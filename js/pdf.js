@@ -218,6 +218,20 @@ const _BANNERS = {
   },
 };
 
+// ── Sobre a Tribuna ───────────────────────────────────────────
+const _SOBRE_TRIBUNA = {
+  nome: 'SOBRE A TRIBUNA',
+  isSobre: true,
+  blocos: [
+    { texto: '**Tribuna de Jundiaí** – Conectando pessoas, histórias e marcas com propósito!' },
+    { texto: 'A Tribuna de Jundiaí é hoje o maior e mais influente portal de notícias da Região Metropolitana de Jundiaí, consolidada como referência em jornalismo regional de qualidade, credibilidade e forte conexão com a comunidade local.' },
+    { texto: 'Em 2025, a Tribuna de Jundiaí foi eleita **Melhor Site de Notícias do Estado de São Paulo** pelo **Brasil Publisher Awards**, reconhecimento nacional que reforça a excelência editorial, a relevância digital e a confiança do público no nosso trabalho.' },
+    { texto: 'Nosso propósito é informar, inspirar e fortalecer o senso de pertencimento da população, valorizando as histórias, eventos, marcas e iniciativas que fazem a região crescer. Para anunciantes e instituições, isso se traduz em **visibilidade qualificada, contexto editorial confiável e impacto real de comunicação.**' },
+    { texto: 'Atualmente, a Tribuna de Jundiaí registra **mais de 4 milhões de pageviews mensais no portal**, além de um **alcance superior a 2,6 milhões de pessoas e mais de 21 milhões de visualizações mensais nas redes sociais.** Esses números refletem não apenas volume, mas **atenção, recorrência e engajamento**, fatores essenciais para campanhas institucionais, promocionais e de posicionamento de marca.' },
+    { texto: 'Anunciar ou produzir conteúdo com a Tribuna de Jundiaí significa inserir sua marca em um ambiente editorial premiado, relevante e respeitado, potencializando resultados de comunicação de forma ética e estratégica.' },
+  ]
+};
+
 // ── Modal de seleção de produto ───────────────────────────────
 function selecionarProdutoPDF(id) {
   const produtos = [
@@ -272,6 +286,11 @@ function selecionarProdutoPDF(id) {
       <label class="banner-pdf-check">
         <input type="checkbox" name="pdf-contato" value="principal"> Principal
       </label>
+    </div>
+    <div style="margin-top:14px;padding:12px;background:#fff8f0;border-radius:8px;border:1px solid #fed7aa">
+      <label class="banner-pdf-check">
+        <input type="checkbox" name="pdf-sobre" value="1"> Incluir <strong>Sobre a Tribuna</strong> antes dos produtos
+      </label>
     </div>`;
 
   const rodape = `
@@ -286,6 +305,8 @@ function selecionarProdutoPDF(id) {
     });
 }
 
+let _pdfEditorState = null;
+
 function _confirmarGerarPDF(id) {
   const selecionados = [...document.querySelectorAll('input[name="produto-pdf"]:checked')]
     .map(c => c.value);
@@ -298,17 +319,109 @@ function _confirmarGerarPDF(id) {
     if (!subOpcoes.length) { mostrarToast('Selecione pelo menos uma posição de banner.', 'aviso'); return; }
   }
 
-  const contatosSel = [...document.querySelectorAll('input[name="pdf-contato"]:checked')]
+  const contatosSel   = [...document.querySelectorAll('input[name="pdf-contato"]:checked')]
     .map(c => c.value);
+  const incluirSobre  = !!document.querySelector('input[name="pdf-sobre"]:checked');
 
   fecharModal('pdf-produto');
-  gerarPDFAutorizacao(id, selecionados, subOpcoes, contatosSel);
+  _abrirEditorPDF(id, selecionados, subOpcoes, contatosSel, incluirSobre);
+}
+
+function _construirItens(produto, subOpcoes) {
+  const itens = [];
+  produto.forEach(k => {
+    if (k === '7') {
+      (subOpcoes || []).forEach(sk => {
+        const b = _BANNERS[sk];
+        if (b) itens.push({ nome: b.nome, blocos: JSON.parse(JSON.stringify(b.blocos)) });
+      });
+    } else {
+      const p = _PRODUTOS[k];
+      if (p) itens.push({ nome: p.nome, blocos: JSON.parse(JSON.stringify(p.blocos)) });
+    }
+  });
+  return itens;
+}
+
+function _abrirEditorPDF(id, produtos, subOpcoes, contatosSel, incluirSobre) {
+  const itens = _construirItens(produtos, subOpcoes);
+  if (incluirSobre) {
+    itens.unshift({
+      nome: _SOBRE_TRIBUNA.nome,
+      isSobre: true,
+      blocos: JSON.parse(JSON.stringify(_SOBRE_TRIBUNA.blocos))
+    });
+  }
+  _pdfEditorState = { id, contatosSel, itens };
+
+  let editorHtml = '<p style="margin-bottom:16px;font-size:13px;color:#64748b">Edite o conteúdo antes de gerar. As alterações valem apenas para este PDF.</p>';
+
+  itens.forEach((item, i) => {
+    editorHtml += `
+      <div style="margin-bottom:20px;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+        <h4 style="font-weight:700;margin-bottom:12px;color:#1e40af;font-size:13px">${escapeHtml(item.nome)}</h4>
+        <div class="form-grid">`;
+
+    item.blocos.forEach((bloco, j) => {
+      if ('titulo' in bloco) {
+        editorHtml += `<div class="campo">
+          <label style="font-size:11px">Título do bloco</label>
+          <input type="text" id="pdf-ed-${i}-${j}-titulo" value="${escapeHtml(bloco.titulo || '')}">
+        </div>`;
+      }
+      if ('texto' in bloco) {
+        editorHtml += `<div class="campo campo-full">
+          <label style="font-size:11px">Texto</label>
+          <textarea id="pdf-ed-${i}-${j}-texto" rows="3" style="font-size:12px">${escapeHtml(bloco.texto || '')}</textarea>
+        </div>`;
+      }
+      if (bloco.lista) {
+        editorHtml += `<div class="campo campo-full">
+          <label style="font-size:11px">Lista (um item por linha)</label>
+          <textarea id="pdf-ed-${i}-${j}-lista" rows="${Math.min(bloco.lista.length + 1, 6)}" style="font-size:12px">${escapeHtml(bloco.lista.join('\n'))}</textarea>
+        </div>`;
+      }
+    });
+
+    editorHtml += '</div></div>';
+  });
+
+  const conteudo = `
+    <div style="max-height:65vh;overflow-y:auto;padding-right:8px">
+      <form id="form-pdf-editor">${editorHtml}</form>
+    </div>`;
+
+  const rodape = `
+    <button class="btn btn-secundario" onclick="fecharModal('pdf-editor')">Cancelar</button>
+    <button class="btn btn-primario" onclick="_confirmarPDFEditado()">Gerar PDF</button>`;
+
+  criarModal('pdf-editor', 'Revisar conteúdo do PDF', conteudo, rodape, false);
+}
+
+function _confirmarPDFEditado() {
+  const { id, contatosSel, itens } = _pdfEditorState;
+
+  itens.forEach((item, i) => {
+    item.blocos.forEach((bloco, j) => {
+      const tituloEl = document.getElementById(`pdf-ed-${i}-${j}-titulo`);
+      const textoEl  = document.getElementById(`pdf-ed-${i}-${j}-texto`);
+      const listaEl  = document.getElementById(`pdf-ed-${i}-${j}-lista`);
+      if (tituloEl !== null) bloco.titulo = tituloEl.value;
+      if (textoEl  !== null) bloco.texto  = textoEl.value;
+      if (listaEl  !== null) bloco.lista  = listaEl.value.split('\n').filter(s => s.trim());
+    });
+  });
+
+  fecharModal('pdf-editor');
+  gerarPDFAutorizacao(id, null, null, contatosSel, itens);
 }
 
 // ── Geração do PDF ───────────────────────────────────────────
-function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel) {
-  produto     = Array.isArray(produto) ? produto : [produto || '1'];
-  subOpcoes   = subOpcoes   || [];
+function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel, itensEditados) {
+  if (!itensEditados) {
+    produto   = Array.isArray(produto) ? produto : [produto || '1'];
+    subOpcoes = subOpcoes || [];
+  }
   contatosSel = contatosSel || ['agencia', 'principal'];
 
   const a = _autorizacoesCache.find(x => x.id === id)
@@ -388,6 +501,65 @@ function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel) {
     return yy;
   }
 
+  // ── renderizar texto com trechos em negrito (**texto**) ──
+  function renderTextoMisto(texto, yy, xInicio, largura) {
+    xInicio = xInicio || mg - 5;
+    largura = largura || cw;
+
+    // Quebra o texto em segmentos bold/normal
+    const segs = [];
+    const re = /\*\*(.*?)\*\*/g;
+    let idx = 0, m;
+    while ((m = re.exec(texto)) !== null) {
+      if (m.index > idx) segs.push({ t: texto.slice(idx, m.index), b: false });
+      segs.push({ t: m[1], b: true });
+      idx = m.index + m[0].length;
+    }
+    if (idx < texto.length) segs.push({ t: texto.slice(idx), b: false });
+
+    // Converte em tokens (palavras + espaços) com flag bold
+    const tokens = [];
+    segs.forEach(function(s) {
+      s.t.split(/(\s+)/).forEach(function(tok) {
+        if (tok) tokens.push({ t: tok, b: s.b });
+      });
+    });
+
+    // Monta linhas respeitando largura
+    const linhas = [];
+    let linha = [], lineW = 0;
+    tokens.forEach(function(tok) {
+      doc.setFont('helvetica', tok.b ? 'bold' : 'normal');
+      doc.setFontSize(9);
+      const w = doc.getTextWidth(tok.t);
+      const eEspaco = /^\s+$/.test(tok.t);
+      if (!eEspaco && lineW + w > largura + 0.5 && linha.length > 0) {
+        linhas.push(linha);
+        linha = [{ t: tok.t, b: tok.b, w }];
+        lineW = w;
+      } else {
+        if (eEspaco && linha.length === 0) return;
+        linha.push({ t: tok.t, b: tok.b, w });
+        lineW += w;
+      }
+    });
+    if (linha.length) linhas.push(linha);
+
+    yy = checkPg(yy, linhas.length * 4.5 + 3);
+    linhas.forEach(function(ln) {
+      let cx = xInicio;
+      ln.forEach(function(tok) {
+        doc.setFont('helvetica', tok.b ? 'bold' : 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...PRETO);
+        doc.text(tok.t, cx, yy);
+        cx += tok.w;
+      });
+      yy += 4.5;
+    });
+    return yy + 1.5;
+  }
+
   // ── renderizar blocos de conteúdo ──
   function renderBlocos(blocos, yy) {
     blocos.forEach(function(b) {
@@ -396,14 +568,19 @@ function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel) {
         tx(b.titulo + ':', mg - 5, yy, { bold: true, size: 9, color: PRETO });
         yy += 5;
       }
-      if (b.texto) {
-        const linhas = doc.splitTextToSize(b.texto, cw);
-        yy = checkPg(yy, linhas.length * 4.5 + 3);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...PRETO);
-        doc.text(linhas, mg - 5, yy);
-        yy += linhas.length * 4.5 + 4;
+      if (b.texto !== undefined) {
+        if (b.texto.includes('**')) {
+          yy = renderTextoMisto(b.texto, yy);
+          yy += 2.5;
+        } else {
+          const linhas = doc.splitTextToSize(b.texto, cw);
+          yy = checkPg(yy, linhas.length * 4.5 + 3);
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(...PRETO);
+          doc.text(linhas, mg - 5, yy);
+          yy += linhas.length * 4.5 + 4;
+        }
       }
       if (b.lista) {
         b.lista.forEach(function(item) {
@@ -495,33 +672,31 @@ function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel) {
   }
 
   // ── seção de itens ──
+  const itensParaPDF = itensEditados || _construirItens(produto, subOpcoes);
   let itemIdx = 1;
-  produto.forEach(function(pKey, pi) {
-    if (pi > 0) { y = checkPg(y, 8); hr(y, CINZA_L, 0.2); y += 8; }
-
-    if (pKey === '7') {
-      const bannersEscolhidos = subOpcoes.map(k => _BANNERS[k]).filter(Boolean);
-      bannersEscolhidos.forEach(function(banner, bi) {
-        if (bi > 0) { y = checkPg(y, 8); hr(y, CINZA_L, 0.2); y += 8; }
-        y = checkPg(y, 20);
-        doc.setFillColor(...LARANJA);
-        doc.rect(colL, y, 2, 8, 'F');
-        tx(itemIdx + ' - ' + banner.nome, colL + 4, y + 6, { bold: true, size: 10.5 });
-        y += 14;
-        y = renderBlocos(banner.blocos, y);
-        itemIdx++;
-      });
+  itensParaPDF.forEach(function(item, pi) {
+    if (item.isSobre) {
+      // Seção "Sobre a Tribuna" — sem numeração, com separador após
+      y = checkPg(y, 20);
+      doc.setFillColor(...LARANJA);
+      doc.rect(colL, y, 2, 8, 'F');
+      tx(item.nome, colL + 4, y + 6, { bold: true, size: 10.5, color: LARANJA });
+      y += 14;
+      y = renderBlocos(item.blocos, y);
+      y = checkPg(y, 10);
+      hr(y, CINZA_L, 0.2);
+      y += 10;
     } else {
-      const def = _PRODUTOS[pKey];
-      if (def) {
-        y = checkPg(y, 20);
-        doc.setFillColor(...LARANJA);
-        doc.rect(colL, y, 2, 8, 'F');
-        tx(itemIdx + ' - ' + def.nome, colL + 4, y + 6, { bold: true, size: 10.5 });
-        y += 14;
-        y = renderBlocos(def.blocos, y);
-        itemIdx++;
+      if (pi > 0 && !itensParaPDF[pi - 1].isSobre) {
+        y = checkPg(y, 8); hr(y, CINZA_L, 0.2); y += 8;
       }
+      y = checkPg(y, 20);
+      doc.setFillColor(...LARANJA);
+      doc.rect(colL, y, 2, 8, 'F');
+      tx(itemIdx + ' - ' + item.nome, colL + 4, y + 6, { bold: true, size: 10.5 });
+      y += 14;
+      y = renderBlocos(item.blocos, y);
+      itemIdx++;
     }
   });
 
