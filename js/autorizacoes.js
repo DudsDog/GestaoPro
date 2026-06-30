@@ -138,6 +138,7 @@ function valorOrdenacao(a, col) {
   switch (col) {
     case 'clienteNome':   return (a.clienteNome  || '').toLowerCase();
     case 'piPoAf':        return (a.piPoAf        || '').toLowerCase();
+    case 'valorProposta': return a.valorProposta || 0;
     case 'valorBruto':    return a.valorBruto  || 0;
     case 'valor':         return a.valor        || 0;
     case 'mesReferencia': return MESES_NUM[a.mesReferencia] || 0;
@@ -212,17 +213,18 @@ function renderizarAutorizacoes(lista) {
       <table class="tabela-autorizacoes">
         <thead>
           <tr>
-            ${_thSort('clienteNome',   'Cliente')}
-            ${_thSort('piPoAf',        'PI/PO/AF')}
-            ${_thSort('valorBruto',    'Val. Bruto')}
-            ${_thSort('valor',         'Val. Líquido')}
-            ${_thSort('mesReferencia', 'Mês Ref.')}
-            ${_thSort('anoReferencia', 'Ano')}
-            ${_thSort('nf',            'NF')}
-            ${_thSort('dataEmissaoNF', 'Dt. Emissão NF')}
-            ${_thSort('dataPagamento', 'Dt. Pagamento')}
-            ${_thSort('numeroPR',      'Nº PR / Proposta')}
-            ${_thSort('descricao',     'Descrição / Campanha')}
+            ${_thSort('clienteNome',    'Cliente')}
+            ${_thSort('numeroPR',       'Nº PR / Proposta')}
+            ${_thSort('piPoAf',         'PI/PO/AF')}
+            ${_thSort('valorProposta',  'Val. Proposta')}
+            ${_thSort('valorBruto',     'Val. Bruto')}
+            ${_thSort('valor',          'Val. Líquido')}
+            ${_thSort('mesReferencia',  'Mês Ref.')}
+            ${_thSort('anoReferencia',  'Ano')}
+            ${_thSort('nf',             'NF')}
+            ${_thSort('dataEmissaoNF',  'Dt. Emissão NF')}
+            ${_thSort('dataPagamento',  'Dt. Pagamento')}
+            ${_thSort('descricao',      'Descrição / Campanha')}
             ${_thSort('agencia',       'Agência')}
             <th>Contato</th>
             <th>Conta</th>
@@ -240,7 +242,9 @@ function renderizarAutorizacoes(lista) {
           ${sorted.map(a => `
             <tr>
               <td class="nowrap"><strong>${d(a.clienteNome)}</strong></td>
+              <td class="nowrap text-sm">${d(a.numeroPR)}</td>
               <td class="nowrap text-sm">${d(a.piPoAf)}</td>
+              <td class="td-valor text-sm">${mo(a.valorProposta)}</td>
               <td class="td-valor text-sm">${mo(a.valorBruto)}</td>
               <td class="td-valor text-sm">${mo(a.valor)}</td>
               <td class="text-sm">${d(a.mesReferencia)}</td>
@@ -248,7 +252,6 @@ function renderizarAutorizacoes(lista) {
               <td class="text-sm">${d(a.nf)}</td>
               <td class="nowrap text-sm">${dt(a.dataEmissaoNF)}</td>
               <td class="nowrap text-sm">${dt(a.dataPagamento)}</td>
-              <td class="nowrap text-sm">${d(a.numeroPR)}</td>
               <td class="text-sm td-descricao">${d(a.descricao || a.produto)}</td>
               <td class="text-sm">${d(a.agencia)}</td>
               <td class="text-sm">${d(a.contato)}</td>
@@ -357,6 +360,12 @@ async function abrirModalAutorizacao(id) {
 
       <!-- Financeiro -->
       <div id="ftab-aut-fin" class="tab-painel form-grid" hidden>
+        <div class="campo">
+          <label>Valor da Proposta (R$)</label>
+          <input type="text" name="valorPropostaTexto"
+            value="${a.valorProposta != null ? formatarMoedaInput(a.valorProposta) : ''}"
+            placeholder="0,00" inputmode="decimal">
+        </div>
         <div class="campo">
           <label>Valor Bruto (R$)</label>
           <input type="text" name="valorBrutoTexto"
@@ -491,6 +500,7 @@ async function salvarAutorizacao(id) {
     mesReferencia: mes,
     anoReferencia: ano,
     status:        form.querySelector('[name="status"]').value,
+    valorProposta: parsearValor(form.querySelector('[name="valorPropostaTexto"]').value),
     valorBruto:    parsearValor(form.querySelector('[name="valorBrutoTexto"]').value),
     valor:         parsearValor(form.querySelector('[name="valorTexto"]').value),
     nf:            form.querySelector('[name="nf"]').value.trim(),

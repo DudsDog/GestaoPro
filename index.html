@@ -42,8 +42,9 @@
       </div>
       <div class="navbar-links">
         <a href="#" class="nav-link ativo" data-secao="dashboard">Painel</a>
-        <a href="#" class="nav-link" data-secao="clientes">Clientes</a>
+        <a href="#" class="nav-link" data-secao="clientes">Contatos</a>
         <a href="#" class="nav-link" data-secao="autorizacoes">Autorizações</a>
+        <a href="#" class="nav-link" data-secao="financeiro">Financeiro</a>
       </div>
       <div class="navbar-usuario">
         <span id="usuario-email" class="text-sm text-muted"></span>
@@ -62,10 +63,10 @@
         <div class="placeholder-secao">Painel em construção — disponível na Etapa 7.</div>
       </section>
 
-      <!-- CLIENTES -->
+      <!-- CONTATOS -->
       <section id="secao-clientes" class="secao">
         <div class="pagina-titulo">
-          <h2>Clientes</h2>
+          <h2>Contatos</h2>
         </div>
         <div class="barra-acoes">
           <div class="barra-filtros">
@@ -76,11 +77,25 @@
               <option value="Inativo">Inativo</option>
               <option value="Prospect">Prospect</option>
             </select>
+            <select id="filtro-tipo-clientes" class="select-filtro">
+              <option value="">Todos os tipos</option>
+              <option value="Cliente">Cliente</option>
+              <option value="Fornecedor">Fornecedor</option>
+              <option value="Cliente e Fornecedor">Cliente e Fornecedor</option>
+            </select>
           </div>
-          <button class="btn btn-primario" onclick="abrirModalCliente()">+ Novo Cliente</button>
+          <button class="btn btn-primario" onclick="abrirModalCliente()">+ Novo Contato</button>
           <button class="btn btn-outline" onclick="exportarCSVClientes()">⬇ Exportar CSV</button>
         </div>
         <div id="clientes-lista"></div>
+      </section>
+
+      <!-- FINANCEIRO -->
+      <section id="secao-financeiro" class="secao">
+        <div class="pagina-titulo">
+          <h2>Financeiro</h2>
+        </div>
+        <div class="placeholder-secao">Financeiro em construção.</div>
       </section>
 
       <!-- AUTORIZAÇÕES -->

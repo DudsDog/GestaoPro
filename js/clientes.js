@@ -28,15 +28,19 @@ function carregarClientes() {
     .addEventListener('input', filtrarClientes);
   document.getElementById('filtro-status-clientes')
     .addEventListener('change', filtrarClientes);
+  document.getElementById('filtro-tipo-clientes')
+    .addEventListener('change', filtrarClientes);
 }
 
 function filtrarClientes() {
   const busca  = (document.getElementById('busca-clientes').value || '').toLowerCase();
   const status = document.getElementById('filtro-status-clientes').value;
+  const tipo   = document.getElementById('filtro-tipo-clientes').value;
   const lista  = _clientesCache.filter(c => {
     const ok1 = !busca  || (c.nomeFantasia || '').toLowerCase().includes(busca);
     const ok2 = !status || (c.status || 'Ativo') === status;
-    return ok1 && ok2;
+    const ok3 = !tipo   || (c.tipoContato || '') === tipo;
+    return ok1 && ok2 && ok3;
   });
   renderizarClientes(lista);
 }
@@ -62,6 +66,7 @@ function renderizarClientes(lista) {
             <th class="th-grupo">Dados Cadastrais</th>
             <th class="th-grupo">Sistema</th>
             <th>Outras Informações</th>
+            <th>Tipo</th>
             <th></th>
           </tr>
         </thead>
@@ -69,7 +74,7 @@ function renderizarClientes(lista) {
       </table>
     </div>
     <p class="text-sm text-muted mt-3">
-      ${lista.length} cliente${lista.length !== 1 ? 's' : ''} encontrado${lista.length !== 1 ? 's' : ''}
+      ${lista.length} contato${lista.length !== 1 ? 's' : ''} encontrado${lista.length !== 1 ? 's' : ''}
     </p>`;
 }
 
@@ -112,6 +117,7 @@ function linhasCliente(c) {
       <td class="text-sm td-outras" title="${escapeHtml(outras)}">
         ${escapeHtml(outrasResumido) || '<span class="text-muted">—</span>'}
       </td>
+      <td class="text-sm nowrap">${badgeTipo(c.tipoContato)}</td>
       <td class="td-acoes">
         <button class="btn btn-outline btn-sm"
           onclick="event.stopPropagation();abrirModalCliente('${c.id}')">Editar</button>
@@ -415,6 +421,15 @@ function abrirModalCliente(id) {
             <option value="Prospect" ${sel('Prospect')}>Prospect</option>
           </select>
         </div>
+        <div class="campo">
+          <label>Tipo</label>
+          <select name="tipoContato">
+            <option value=""                   ${c.tipoContato===''||!c.tipoContato?'selected':''}>— selecione —</option>
+            <option value="Cliente"            ${c.tipoContato==='Cliente'?'selected':''}>Cliente</option>
+            <option value="Fornecedor"         ${c.tipoContato==='Fornecedor'?'selected':''}>Fornecedor</option>
+            <option value="Cliente e Fornecedor" ${c.tipoContato==='Cliente e Fornecedor'?'selected':''}>Cliente e Fornecedor</option>
+          </select>
+        </div>
         <div class="campo campo-full">
           <label>Trabalhos Realizados</label>
           <textarea name="trabalhosRealizados" rows="4">${escapeHtml(c.trabalhosRealizados||'')}</textarea>
@@ -518,7 +533,7 @@ function exportarCSVClientes() {
   if (!lista.length) { mostrarToast('Nenhum cliente para exportar.', 'aviso'); return; }
 
   const cols = [
-    'Nome Fantasia','Razão Social','CNPJ','Setor','Subsetor','Status',
+    'Nome Fantasia','Razão Social','CNPJ','Setor','Subsetor','Status','Tipo',
     'Principal Nome','Principal Celular','Principal Cargo','Principal Email',
     'Financeiro Nome','Financeiro Celular','Financeiro Cargo','Financeiro Email',
     'Marketing Nome','Marketing Celular','Marketing Cargo','Marketing Email',
@@ -531,7 +546,7 @@ function exportarCSVClientes() {
   const esc = v => '"' + String(v || '').replace(/"/g, '""') + '"';
 
   const linhas = lista.map(c => [
-    c.nomeFantasia, c.razaoSocial, c.cnpj, c.setor, c.subsetor, c.status || 'Ativo',
+    c.nomeFantasia, c.razaoSocial, c.cnpj, c.setor, c.subsetor, c.status || 'Ativo', c.tipoContato,
     c.propNome, c.propCelular, c.propCargo, c.propEmail,
     c.finNome, c.finCelular, c.finCargo, c.finEmail,
     c.mktNome, c.mktCelular, c.mktCargo, c.mktEmail,

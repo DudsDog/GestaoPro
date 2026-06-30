@@ -89,6 +89,16 @@ function badgeStatus(status) {
   return `<span class="badge badge-${slug}">${labels[slug] || status}</span>`;
 }
 
+function badgeTipo(tipo) {
+  if (!tipo) return '<span class="text-muted">—</span>';
+  const cores = {
+    'Cliente':             'badge-ativo',
+    'Fornecedor':          'badge-prospect',
+    'Cliente e Fornecedor':'badge-faturada',
+  };
+  return `<span class="badge ${cores[tipo] || ''}">${escapeHtml(tipo)}</span>`;
+}
+
 // ── Máscara de celular ────────────────────────────────────────
 function formatarCelular(str) {
   if (!str) return '';
