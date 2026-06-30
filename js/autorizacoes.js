@@ -6,8 +6,8 @@ let _autorizacoesListener    = null;
 let _autorizacoesCache       = [];
 let _registrosPendentes      = [];
 let _contadorInicializado    = false;
-let _sortColuna              = '';
-let _sortDirecao             = 'asc';
+let _sortColuna              = 'numeroPR';
+let _sortDirecao             = 'desc';
 
 const MESES_NUM = {
   'Janeiro':1,'Fevereiro':2,'Março':3,'Abril':4,'Maio':5,'Junho':6,
@@ -41,17 +41,19 @@ async function inicializarContadorPR() {
 async function gerarNumeroPR() {
   const anoAtual = new Date().getFullYear().toString().slice(-2);
 
-  // Consulta o Firestore diretamente para garantir dados atualizados,
-  // independente do estado do cache local.
-  const snap = await db.collection('autorizacoes').get();
+  // Consulta ambas as coleções para evitar duplicidade entre propostas e autorizações
+  const [snapAut, snapProp] = await Promise.all([
+    db.collection('autorizacoes').get(),
+    db.collection('propostas').get()
+  ]);
+
   let maxNumero = 0;
-  snap.docs.forEach(d => {
+  [...snapAut.docs, ...snapProp.docs].forEach(d => {
     const p = parsearNumeroPR(d.data().numeroPR);
     if (p && p.ano === anoAtual) maxNumero = Math.max(maxNumero, p.numero);
   });
 
-  const proximo = maxNumero + 1;
-  return `PR ${String(proximo).padStart(3, '0')}/${anoAtual}`;
+  return `PR ${String(maxNumero + 1).padStart(3, '0')}/${anoAtual}`;
 }
 
 // ── Carregamento ──────────────────────────────────────────────
@@ -264,8 +266,6 @@ function renderizarAutorizacoes(lista) {
               <td class="nowrap text-sm">${dt(a.dataPostagem)}</td>
               <td>${badgeStatus(a.status || 'Autorizada')}</td>
               <td class="td-acoes">
-                <button class="btn btn-outline btn-sm"
-                  onclick="selecionarProdutoPDF('${a.id}')">PDF</button>
                 <button class="btn btn-outline btn-sm"
                   onclick="abrirModalAutorizacao('${a.id}')">Editar</button>
                 <button class="btn btn-perigo btn-sm"

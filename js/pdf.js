@@ -311,8 +311,9 @@ function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel) {
   subOpcoes   = subOpcoes   || [];
   contatosSel = contatosSel || ['agencia', 'principal'];
 
-  const a = _autorizacoesCache.find(x => x.id === id);
-  if (!a) { mostrarToast('Autorização não encontrada.', 'erro'); return; }
+  const a = _autorizacoesCache.find(x => x.id === id)
+         || (_propostasCache || []).find(x => x.id === id);
+  if (!a) { mostrarToast('Registro não encontrado.', 'erro'); return; }
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });

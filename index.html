@@ -43,6 +43,7 @@
       <div class="navbar-links">
         <a href="#" class="nav-link ativo" data-secao="dashboard">Painel</a>
         <a href="#" class="nav-link" data-secao="clientes">Contatos</a>
+        <a href="#" class="nav-link" data-secao="propostas">Proposta</a>
         <a href="#" class="nav-link" data-secao="autorizacoes">Autorizações</a>
         <a href="#" class="nav-link" data-secao="financeiro">Financeiro</a>
       </div>
@@ -88,6 +89,26 @@
           <button class="btn btn-outline" onclick="exportarCSVClientes()">⬇ Exportar CSV</button>
         </div>
         <div id="clientes-lista"></div>
+      </section>
+
+      <!-- PROPOSTA -->
+      <section id="secao-propostas" class="secao">
+        <div class="pagina-titulo">
+          <h2>Propostas</h2>
+        </div>
+        <div class="barra-acoes">
+          <div class="barra-filtros">
+            <input type="text" id="busca-propostas" class="input-busca" placeholder="Buscar por cliente...">
+            <select id="filtro-status-propostas" class="select-filtro">
+              <option value="">Todos os status</option>
+              <option value="Em aberto">Em aberto</option>
+              <option value="Enviada">Enviada</option>
+              <option value="Aprovada">Aprovada</option>
+            </select>
+          </div>
+          <button class="btn btn-primario" onclick="abrirModalProposta()">+ Nova Proposta</button>
+        </div>
+        <div id="propostas-lista"></div>
       </section>
 
       <!-- FINANCEIRO -->
@@ -155,6 +176,7 @@
   <script src="js/auth.js"></script>
   <script src="js/clientes.js"></script>
   <script src="js/autorizacoes.js"></script>
+  <script src="js/propostas.js"></script>
   <script src="js/drive.js"></script>
   <script src="js/pdf.js"></script>
 

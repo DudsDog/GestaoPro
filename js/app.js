@@ -22,6 +22,7 @@ function navegarPara(nome) {
 
   // Carrega dados da seção ao navegar
   if (nome === 'clientes'      && typeof carregarClientes === 'function')      carregarClientes();
+  if (nome === 'propostas'     && typeof carregarPropostas === 'function')     carregarPropostas();
   if (nome === 'autorizacoes'  && typeof carregarAutorizacoes === 'function')  carregarAutorizacoes();
   if (nome === 'dashboard'     && typeof carregarDashboard === 'function')     carregarDashboard();
 }
