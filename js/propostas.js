@@ -89,8 +89,7 @@ function _valorOrdenacaoProp(p, col) {
     case 'clienteNome':   return (p.clienteNome || '').toLowerCase();
     case 'numeroPR':      return _sortKeyPR(p.numeroPR);
     case 'valorProposta': return p.valorProposta || 0;
-    case 'mesReferencia': return MESES_NUM[p.mesReferencia] || 0;
-    case 'anoReferencia': return parseInt(p.anoReferencia) || 0;
+    case 'dataReferencia': return (p.dataReferencia && typeof p.dataReferencia.toDate === 'function') ? p.dataReferencia.toDate().getTime() : (p.dataReferencia || 0);
     case 'status':        return p.status || '';
     default:              return p.dataCriacao ? p.dataCriacao.seconds : 0;
   }
@@ -132,8 +131,7 @@ function renderizarPropostas(lista) {
             ${_thSortProp('numeroPR',      'Nº PR / Proposta', 'col-sticky-2')}
             <th>Descrição / Campanha</th>
             ${_thSortProp('valorProposta', 'Val. Proposta')}
-            ${_thSortProp('mesReferencia', 'Mês Ref.')}
-            ${_thSortProp('anoReferencia', 'Ano')}
+            ${_thSortProp('dataReferencia', 'Data Ref.')}
             <th>Agência</th>
             ${_thSortProp('status', 'Status')}
             <th></th>
@@ -146,8 +144,7 @@ function renderizarPropostas(lista) {
               <td class="nowrap text-sm col-sticky-2">${d(p.numeroPR)}</td>
               <td class="text-sm td-descricao">${d(p.descricao)}</td>
               <td class="td-valor text-sm">${mo(p.valorProposta)}</td>
-              <td class="text-sm">${d(p.mesReferencia)}</td>
-              <td class="text-sm">${d(p.anoReferencia)}</td>
+              <td class="text-sm">${p.dataReferencia ? formatarData(p.dataReferencia) : d(p.mesReferencia && p.anoReferencia ? p.mesReferencia + '/' + p.anoReferencia : (p.mesReferencia || p.anoReferencia || ''))}</td>
               <td class="text-sm">${d(p.agencia)}</td>
               <td>${badgeStatusProposta(p.status || 'Em aberto')}</td>
               <td class="td-acoes">
@@ -165,6 +162,20 @@ function renderizarPropostas(lista) {
     <p class="text-sm text-muted mt-3">
       ${lista.length} proposta${lista.length !== 1 ? 's' : ''} encontrada${lista.length !== 1 ? 's' : ''}
     </p>`;
+}
+
+// ── Auto-preenchimento de Agência ─────────────────────────────
+function preencherAgenciaProposta(clienteId) {
+  const cli = _clientesCache.find(c => c.id === clienteId);
+  if (!cli) return;
+  if (!cli.agenciaNome && !cli.agenciaContato && !cli.agenciaEmail) return;
+  const set = (name, val) => {
+    const el = document.querySelector(`#form-proposta [name="${name}"]`);
+    if (el && !el.value && val) el.value = val;
+  };
+  set('agencia',      cli.agenciaNome);
+  set('contato',      cli.agenciaContato);
+  set('emailContato', cli.agenciaEmail);
 }
 
 // ── Aba Produto ───────────────────────────────────────────────
@@ -288,8 +299,9 @@ async function abrirModalProposta(id) {
       ${p.clienteId === c.id ? 'selected' : ''}>${escapeHtml(c.nomeFantasia||'')}</option>`
   ).join('');
 
-  const optsM = Object.keys(MESES_NUM).map(m =>
-    `<option value="${m}" ${p.mesReferencia===m?'selected':''}>${m}</option>`).join('');
+  const _hj = new Date();
+  const hoje = `${_hj.getFullYear()}-${String(_hj.getMonth()+1).padStart(2,'0')}-${String(_hj.getDate()).padStart(2,'0')}`;
+  const dataRefVal = p.dataReferencia ? tsParaInputDate(p.dataReferencia) : hoje;
 
   const corpo = `
     <div class="form-tabs" id="form-tabs-prop">
@@ -311,7 +323,8 @@ async function abrirModalProposta(id) {
       <div id="ftab-prop-id" class="tab-painel form-grid">
         <div class="campo campo-full">
           <label>Cliente *</label>
-          <select name="clienteId" id="sel-cliente-prop" required>
+          <select name="clienteId" id="sel-cliente-prop" required
+            onchange="preencherAgenciaProposta(this.value)">
             <option value="">— selecione —</option>${optsClientes}
           </select>
         </div>
@@ -322,16 +335,8 @@ async function abrirModalProposta(id) {
           ${!id ? '<span class="campo-dica">O número será reservado apenas ao salvar.</span>' : ''}
         </div>
         <div class="campo">
-          <label>Mês Referência</label>
-          <select name="mesReferencia">
-            <option value="">—</option>${optsM}
-          </select>
-        </div>
-        <div class="campo">
-          <label>Ano</label>
-          <input type="text" name="anoReferencia"
-            value="${v('anoReferencia') || new Date().getFullYear()}"
-            placeholder="${new Date().getFullYear()}" maxlength="4">
+          <label>Data de Referência</label>
+          <input type="date" name="dataReferencia" value="${dataRefVal}">
         </div>
         <div class="campo">
           <label>Status</label>
@@ -469,8 +474,7 @@ async function salvarProposta(id) {
     clienteId:      selCliente.value,
     clienteNome,
     numeroPR,
-    mesReferencia:  form.querySelector('[name="mesReferencia"]').value,
-    anoReferencia:  form.querySelector('[name="anoReferencia"]').value || String(new Date().getFullYear()),
+    dataReferencia: inputDateParaTimestamp(form.querySelector('[name="dataReferencia"]').value),
     status,
     valorProposta:  parsearValor(form.querySelector('[name="valorPropostaTexto"]').value),
     descricao:      form.querySelector('[name="descricao"]').value.trim(),
@@ -527,8 +531,7 @@ async function _criarAutorizacaoDeProposta(dados) {
     clienteNome:    dados.clienteNome,
     numeroPR:       dados.numeroPR,
     piPoAf:         dados.piPoAf,
-    mesReferencia:  dados.mesReferencia,
-    anoReferencia:  dados.anoReferencia,
+    dataReferencia: dados.dataReferencia,
     descricao:      dados.descricao,
     agencia:        dados.agencia,
     contato:        dados.contato,
