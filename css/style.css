@@ -320,14 +320,17 @@ body {
 .btn-secundario:hover:not(:disabled) { background: var(--cinza-100); }
 
 /* Botão outline — usado solto sobre o laranja (barra de ações, navbar) */
+/* Chip com fundo próprio — precisa ler tanto sobre o laranja (navbar,
+   barra de ações) quanto dentro de linhas de tabela (papel) */
 .btn-outline {
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--ink);
+  background: rgba(255, 248, 240, .92);
+  border: 1px solid var(--cinza-300);
+  color: var(--cinza-700);
 }
 .btn-outline:hover:not(:disabled) {
-  background: rgba(255, 255, 255, .08);
+  background: var(--branco);
   border-color: var(--accent-strong);
+  color: var(--accent-deep);
 }
 
 .btn-perigo { background: var(--vermelho); color: var(--branco); }
@@ -1035,9 +1038,9 @@ tr:hover td { background: var(--cinza-100); }
 
 /* ── Importação CSV ──────────────────────── */
 .btn-outline-perigo {
-  background: transparent;
-  border-color: #ffb4b4;
-  color: #ffb4b4;
+  background: rgba(255, 248, 240, .92);
+  border-color: var(--vermelho);
+  color: var(--vermelho);
 }
 .btn-outline-perigo:hover { background: var(--vermelho); border-color: var(--vermelho); color: var(--branco); }
 
