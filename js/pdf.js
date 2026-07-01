@@ -282,9 +282,13 @@ function _gerarPDFComProdutosSalvos(id) {
 
 // ── Modal de seleção de produto ───────────────────────────────
 function selecionarProdutoPDF(id) {
-  // Se a proposta já tem produtos definidos na aba Produto, vai direto para geração
+  // Propostas: seleção de produto feita na aba Produto da proposta
   const reg = (_propostasCache || []).find(x => x.id === id);
-  if (reg && reg.produtosSelecionados && reg.produtosSelecionados.length) {
+  if (reg) {
+    if (!reg.produtosSelecionados || !reg.produtosSelecionados.length) {
+      mostrarToast('Edite a proposta e selecione os produtos na aba Produto.', 'aviso');
+      return;
+    }
     _selecionarContatoEGerar(id, reg);
     return;
   }

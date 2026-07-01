@@ -1,31 +1,58 @@
 /* ════════════════════════════════════════
    GestãoPro — Tribuna de Jundiaí
    style.css
+   Paleta: laranja de redação (base) + tinta quase-branca sobre vidro,
+   com ilhas de papel creme sólido onde a leitura de dados exige
+   contraste total (tabelas, formulários, modal, documento p/ PDF).
+   Mesma identidade visual do RedaçãoPro — ver css/styles.css lá.
 ════════════════════════════════════════ */
 
 /* ── Variáveis ───────────────────────── */
 :root {
-  --azul:        #1a56db;
-  --azul-escuro: #1e429f;
-  --azul-claro:  #e8f0fe;
-  --laranja:        #e55a00;
-  --laranja-escuro: #b84800;
-  --verde:       #057a55;
-  --vermelho:    #e02424;
-  --amarelo:     #c27803;
+  /* Fundo — laranja de redação */
+  --bg-1: #b7410e;
+  --bg-2: #7a2b0a;
+  --bg-3: #3f1608;
 
-  --cinza-100: #f3f4f6;
-  --cinza-200: #e5e7eb;
-  --cinza-300: #d1d5db;
-  --cinza-500: #6b7280;
-  --cinza-700: #374151;
-  --cinza-900: #111827;
-  --branco:    #ffffff;
+  /* Tinta sobre o laranja/vidro */
+  --ink: #fff8f0;
+  --ink-muted: rgba(255, 248, 240, 0.72);
+  --ink-dim: rgba(255, 248, 240, 0.46);
 
-  --sombra:    0 1px 3px rgba(0,0,0,.10);
-  --sombra-md: 0 4px 16px rgba(0,0,0,.14);
-  --raio:      8px;
-  --raio-sm:   4px;
+  /* Acento — dourado/laranja de marca (substitui o antigo azul) */
+  --accent: #fdba74;
+  --accent-strong: #fb923c;
+  --accent-deep: #ea580c;
+  --line: rgba(255, 248, 240, 0.16);
+  --tint: #fdead9; /* destaque sólido claro — cabeçalhos fixos, grupos ativos */
+
+  /* Superfícies de vidro (navbar, cartões de painel, placeholders) */
+  --glass: rgba(255, 248, 240, 0.07);
+  --glass-strong: rgba(255, 248, 240, 0.13);
+
+  /* Escala neutra — agora com tom quente (papel), não mais cinza-frio */
+  --cinza-100: #fbf1e8;
+  --cinza-200: #f0e0d4;
+  --cinza-300: #e2c9b3;
+  --cinza-400: #c9ac8e;
+  --cinza-500: #96795f;
+  --cinza-600: #7c6047;
+  --cinza-700: #5c4632;
+  --cinza-900: #3a1f0f;
+  --branco:    #fff8f0;
+
+  /* Semânticas — inalteradas */
+  --verde:    #057a55;
+  --vermelho: #e02424;
+  --amarelo:  #c27803;
+
+  --sombra:    0 8px 28px rgba(0, 0, 0, 0.32);
+  --sombra-md: 0 20px 50px rgba(0, 0, 0, 0.4);
+  --sombra-glass-hover: 0 20px 55px rgba(0, 0, 0, 0.45), 0 0 36px rgba(253, 186, 116, 0.26);
+  --raio:      12px;
+  --raio-sm:   6px;
+
+  --font-display: "Fraunces", Georgia, serif;
 }
 
 /* ── Reset ───────────────────────────── */
@@ -35,11 +62,15 @@
 [hidden] { display: none !important; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
-  color: var(--cinza-900);
-  background: var(--cinza-100);
+  color: var(--ink);
   min-height: 100vh;
+  background:
+    radial-gradient(1100px 550px at 12% -10%, rgba(253, 186, 116, 0.22), transparent 60%),
+    radial-gradient(900px 520px at 100% 0%, rgba(234, 88, 12, 0.28), transparent 55%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+  background-attachment: fixed;
 }
 
 /* ════════════════════════════════════════
@@ -50,12 +81,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #e55a00 0%, #b84800 100%);
+  background: linear-gradient(135deg, var(--accent-strong) 0%, var(--bg-1) 55%, var(--bg-3) 100%);
   padding: 20px;
 }
 
 .login-card {
   background: var(--branco);
+  color: var(--cinza-900);
   padding: 40px;
   border-radius: 12px;
   box-shadow: var(--sombra-md);
@@ -64,9 +96,10 @@ body {
 }
 
 .login-titulo {
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
-  color: var(--laranja-escuro);
+  color: var(--accent-deep);
   text-align: center;
   line-height: 1.3;
 }
@@ -82,19 +115,18 @@ body {
 
 .login-card .campo input:focus {
   outline: none;
-  border-color: var(--laranja);
-  box-shadow: 0 0 0 3px rgba(229,90,0,.12);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, .18);
 }
 
-.login-card .btn-primario { background: var(--laranja); }
-.login-card .btn-primario:hover:not(:disabled) { background: var(--laranja-escuro); }
-
 /* ════════════════════════════════════════
-   NAVBAR
+   NAVBAR — vidro escuro sobre o laranja
 ════════════════════════════════════════ */
 .navbar {
-  background: var(--branco);
-  border-bottom: 1px solid var(--cinza-200);
+  background: rgba(58, 20, 8, 0.5);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
   padding: 0 24px;
@@ -103,7 +135,6 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: var(--sombra);
 }
 
 .navbar-marca {
@@ -113,16 +144,17 @@ body {
 }
 
 .marca-nome {
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 13px;
-  color: var(--azul-escuro);
+  color: var(--ink);
   line-height: 1.2;
   white-space: nowrap;
 }
 
 .marca-sistema {
   font-size: 11px;
-  color: var(--cinza-500);
+  color: var(--ink-dim);
 }
 
 .navbar-links {
@@ -133,7 +165,7 @@ body {
 
 .nav-link {
   text-decoration: none;
-  color: var(--cinza-700);
+  color: var(--ink-muted);
   padding: 7px 14px;
   border-radius: var(--raio-sm);
   font-weight: 500;
@@ -141,8 +173,8 @@ body {
   white-space: nowrap;
 }
 
-.nav-link:hover  { background: var(--cinza-100); }
-.nav-link.ativo  { background: var(--azul-claro); color: var(--azul); }
+.nav-link:hover  { background: rgba(255, 255, 255, .08); color: var(--ink); }
+.nav-link.ativo  { background: rgba(253, 186, 116, .22); color: var(--ink); }
 
 .navbar-usuario {
   display: flex;
@@ -150,6 +182,8 @@ body {
   gap: 10px;
   flex-shrink: 0;
 }
+
+.navbar-usuario .text-muted { color: var(--ink-dim); }
 
 /* ════════════════════════════════════════
    LAYOUT PRINCIPAL
@@ -160,13 +194,13 @@ body {
   padding: 28px 24px;
 }
 
-.pagina-titulo {
-  margin-bottom: 20px;
-}
+.pagina-titulo { margin-bottom: 20px; }
 
 .pagina-titulo h2 {
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
+  color: var(--ink);
 }
 
 /* Seções — ocultas por padrão; .ativa exibe */
@@ -174,11 +208,9 @@ body {
 .secao.ativa { display: block; }
 
 /* ════════════════════════════════════════
-   CAMPOS / FORMULÁRIOS
+   CAMPOS / FORMULÁRIOS  (superfície de papel)
 ════════════════════════════════════════ */
-.campo {
-  margin-bottom: 14px;
-}
+.campo { margin-bottom: 14px; }
 
 .campo label {
   display: block;
@@ -205,8 +237,8 @@ body {
 .campo select:focus,
 .campo textarea:focus {
   outline: none;
-  border-color: var(--azul);
-  box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, .18);
 }
 
 .campo textarea { resize: vertical; min-height: 80px; }
@@ -248,21 +280,55 @@ body {
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: background .15s, opacity .15s, box-shadow .15s;
+  transition: background .15s, opacity .15s, box-shadow .15s, transform .15s;
   white-space: nowrap;
   line-height: 1;
 }
 
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
-.btn-primario { background: var(--azul); color: var(--branco); }
-.btn-primario:hover:not(:disabled) { background: var(--azul-escuro); }
+/* Botão primário — ação principal, mesmo tratamento do RedaçãoPro */
+.btn-primario {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent-strong) 0%, var(--accent-deep) 100%);
+  color: var(--branco);
+  box-shadow: 0 8px 22px rgba(234, 88, 12, .38);
+}
+.btn-primario::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: -120%;
+  width: 60%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, .45), transparent);
+  transform: skewX(-20deg);
+  transition: left .5s ease;
+}
+.btn-primario:hover:not(:disabled) {
+  box-shadow: 0 10px 28px rgba(234, 88, 12, .48);
+  transform: translateY(-1px);
+}
+.btn-primario:hover:not(:disabled)::before { left: 130%; }
 
-.btn-secundario { background: var(--cinza-100); color: var(--cinza-700); border: 1px solid var(--cinza-300); }
-.btn-secundario:hover:not(:disabled) { background: var(--cinza-200); }
+/* Botão secundário — usado dentro de modais/formulários (papel) */
+.btn-secundario {
+  background: transparent;
+  color: var(--cinza-700);
+  border: 1px solid var(--cinza-300);
+}
+.btn-secundario:hover:not(:disabled) { background: var(--cinza-100); }
 
-.btn-outline { background: transparent; border: 1px solid var(--cinza-300); color: var(--cinza-700); }
-.btn-outline:hover:not(:disabled) { background: var(--cinza-100); }
+/* Botão outline — usado solto sobre o laranja (barra de ações, navbar) */
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.btn-outline:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .08);
+  border-color: var(--accent-strong);
+}
 
 .btn-perigo { background: var(--vermelho); color: var(--branco); }
 .btn-perigo:hover:not(:disabled) { background: #c81e1e; }
@@ -272,24 +338,30 @@ body {
 .btn-block { width: 100%; }
 
 /* ════════════════════════════════════════
-   CARTÕES
+   CARTÕES  (superfície de vidro — flutuam sobre o laranja)
 ════════════════════════════════════════ */
 .card {
-  background: var(--branco);
+  background: var(--glass);
+  color: var(--ink);
+  border: 1px solid var(--line);
   border-radius: var(--raio);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
   box-shadow: var(--sombra);
   padding: 20px;
+  transition: transform .25s ease, box-shadow .25s ease;
 }
+.card:hover { transform: translateY(-3px); box-shadow: var(--sombra-glass-hover); }
 
 /* ════════════════════════════════════════
-   TABELAS
+   TABELAS  (superfície de papel)
 ════════════════════════════════════════ */
 .tabela-wrapper {
   overflow-x: scroll;
   overflow-y: auto;
   max-height: calc(100vh - 220px);
   border-radius: var(--raio);
-  box-shadow: var(--sombra);
+  box-shadow: var(--sombra-md);
 }
 
 .tabela-wrapper th {
@@ -331,7 +403,7 @@ tr:hover td { background: var(--cinza-100); }
 .th-valor  { text-align: right; }
 
 /* ════════════════════════════════════════
-   BADGES DE STATUS
+   BADGES DE STATUS — semântica inalterada
 ════════════════════════════════════════ */
 .badge {
   display: inline-flex;
@@ -356,12 +428,13 @@ tr:hover td { background: var(--cinza-100); }
 .badge-prospect { background: #dbeafe; color: #1e40af; }
 
 /* ════════════════════════════════════════
-   MODAL
+   MODAL  (superfície de papel)
 ════════════════════════════════════════ */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.45);
+  background: rgba(20, 8, 2, .55);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -372,8 +445,9 @@ tr:hover td { background: var(--cinza-100); }
 
 .modal {
   background: var(--branco);
+  color: var(--cinza-900);
   border-radius: var(--raio);
-  box-shadow: var(--sombra-md);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
   width: 100%;
   max-width: 700px;
   padding: 28px;
@@ -387,10 +461,7 @@ tr:hover td { background: var(--cinza-100); }
   margin-bottom: 20px;
 }
 
-.modal-header h3 {
-  font-size: 17px;
-  font-weight: 700;
-}
+.modal-header h3 { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
 
 .modal-fechar {
   background: none;
@@ -414,7 +485,7 @@ tr:hover td { background: var(--cinza-100); }
 }
 
 /* ════════════════════════════════════════
-   BARRA DE AÇÕES (busca + botão novo)
+   BARRA DE AÇÕES (busca + botão novo) — flutua sobre o laranja
 ════════════════════════════════════════ */
 .barra-acoes {
   display: flex;
@@ -448,11 +519,11 @@ tr:hover td { background: var(--cinza-100); }
 .input-busca:focus,
 .select-filtro:focus {
   outline: none;
-  border-color: var(--azul);
+  border-color: var(--accent-strong);
 }
 
 /* ════════════════════════════════════════
-   PAINEL — CARDS DE TOTAIS
+   PAINEL — CARDS DE TOTAIS  (vidro)
 ════════════════════════════════════════ */
 .painel-grid {
   display: grid;
@@ -462,36 +533,42 @@ tr:hover td { background: var(--cinza-100); }
 }
 
 .card-total {
-  background: var(--branco);
+  background: var(--glass);
+  border: 1px solid var(--line);
   border-radius: var(--raio);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
   box-shadow: var(--sombra);
   padding: 20px;
-  border-left: 4px solid var(--azul);
+  border-left: 4px solid var(--accent-strong);
+  transition: transform .25s ease, box-shadow .25s ease;
 }
+.card-total:hover { transform: translateY(-3px); box-shadow: var(--sombra-glass-hover); }
 
 .card-total-label {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .05em;
-  color: var(--cinza-500);
+  color: var(--ink-dim);
   margin-bottom: 6px;
 }
 
 .card-total-valor {
+  font-family: var(--font-display);
   font-size: 24px;
   font-weight: 700;
-  color: var(--cinza-900);
+  color: var(--ink);
 }
 
 .card-total-sub {
   font-size: 12px;
-  color: var(--cinza-500);
+  color: var(--ink-dim);
   margin-top: 4px;
 }
 
 /* ════════════════════════════════════════
-   VISUALIZAÇÃO DA AUTORIZAÇÃO (para PDF)
+   VISUALIZAÇÃO DA AUTORIZAÇÃO (para PDF) — papel, sempre alto contraste
 ════════════════════════════════════════ */
 .autorizacao-view {
   max-width: 820px;
@@ -509,21 +586,23 @@ tr:hover td { background: var(--cinza-100); }
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 2px solid var(--azul);
+  border-bottom: 2px solid var(--accent-deep);
   padding-bottom: 20px;
   margin-bottom: 28px;
 }
 
 .doc-agencia-nome {
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
-  color: var(--azul-escuro);
+  color: var(--accent-deep);
 }
 
 .doc-pr-numero {
+  font-family: var(--font-display);
   font-size: 22px;
   font-weight: 700;
-  color: var(--azul);
+  color: var(--accent-deep);
   text-align: right;
 }
 
@@ -535,9 +614,7 @@ tr:hover td { background: var(--cinza-100); }
   text-align: right;
 }
 
-.doc-secao {
-  margin-bottom: 24px;
-}
+.doc-secao { margin-bottom: 24px; }
 
 .doc-secao-titulo {
   font-size: 11px;
@@ -571,7 +648,7 @@ tr:hover td { background: var(--cinza-100); }
 }
 
 .doc-tabela-valores th {
-  background: var(--azul);
+  background: var(--accent-deep);
   color: var(--branco);
   padding: 8px 14px;
   text-align: left;
@@ -611,7 +688,7 @@ tr:hover td { background: var(--cinza-100); }
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: var(--cinza-900);
+  background: var(--bg-3);
   color: var(--branco);
   padding: 12px 20px;
   border-radius: var(--raio);
@@ -636,18 +713,19 @@ tr:hover td { background: var(--cinza-100); }
 .sucesso { color: var(--verde); font-size: 13px; }
 
 .placeholder-secao {
-  color: var(--cinza-500);
-  background: var(--branco);
+  color: var(--ink-muted);
+  background: var(--glass);
+  border: 1px dashed var(--line);
   border-radius: var(--raio);
   padding: 48px;
   text-align: center;
-  box-shadow: var(--sombra);
+  backdrop-filter: blur(10px);
 }
 
 .carregando {
   text-align: center;
   padding: 48px;
-  color: var(--cinza-500);
+  color: var(--ink-dim);
 }
 
 .vazio {
@@ -707,8 +785,8 @@ tr:hover td { background: var(--cinza-100); }
 .tabela-links td input:focus,
 .tabela-links td select:focus {
   outline: none;
-  border-color: var(--azul);
-  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px rgba(251, 146, 60, .15);
 }
 .tabela-links td select {
   width: 100%;
@@ -728,7 +806,7 @@ tr:hover td { background: var(--cinza-100); }
   margin-bottom: 14px;
   font-size: 13px;
 }
-.sobre-chk-prod label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #b84800; }
+.sobre-chk-prod label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--accent-deep); }
 
 .prod-botoes {
   display: flex;
@@ -748,8 +826,8 @@ tr:hover td { background: var(--cinza-100); }
 }
 .btn-prod-toggle:hover { background: var(--cinza-100); }
 .btn-prod-toggle.ativo {
-  background: var(--laranja);
-  border-color: var(--laranja);
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
   color: var(--branco);
   font-weight: 600;
 }
@@ -793,14 +871,14 @@ tr:hover td { background: var(--cinza-100); }
 .bloco-ed-input:focus,
 .bloco-ed-textarea:focus {
   outline: none;
-  border-color: var(--laranja);
-  box-shadow: 0 0 0 3px rgba(229,90,0,.12);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, .12);
 }
 .bloco-ed-lista { margin-top: 4px; }
 
 .th-grupo {
-  background: var(--azul-claro);
-  color: var(--azul-escuro);
+  background: var(--tint);
+  color: var(--accent-deep);
 }
 
 /* Coluna Empresa fixa ao rolar horizontalmente */
@@ -813,7 +891,7 @@ tr:hover td { background: var(--cinza-100); }
 }
 
 .tabela-clientes th:first-child {
-  background: var(--azul-claro);
+  background: var(--tint);
   z-index: 2;
 }
 
@@ -826,7 +904,7 @@ tr:hover td { background: var(--cinza-100); }
 }
 .tabela-autorizacoes thead .col-sticky-1,
 .tabela-autorizacoes thead .col-sticky-2 {
-  background: var(--azul-claro);
+  background: var(--tint);
   z-index: 2;
 }
 .tabela-autorizacoes .col-sticky-1 { left: 0; }
@@ -841,8 +919,8 @@ tr:hover td { background: var(--cinza-100); }
   font-size: 13px;
 }
 
-.td-grupo:hover { background: var(--azul-claro) !important; color: var(--azul); }
-.td-grupo.ativo  { background: var(--azul) !important; color: var(--branco) !important; font-weight: 600; }
+.td-grupo:hover { background: var(--tint) !important; color: var(--accent-deep); }
+.td-grupo.ativo  { background: var(--accent-deep) !important; color: var(--branco) !important; font-weight: 600; }
 .td-grupo.ativo .grupo-seta { color: var(--branco); }
 
 .grupo-dot {
@@ -856,7 +934,7 @@ tr:hover td { background: var(--cinza-100); }
   flex-shrink: 0;
 }
 
-.tem-dado .grupo-dot { background: var(--azul); }
+.tem-dado .grupo-dot { background: var(--accent-deep); }
 .ativo    .grupo-dot { background: var(--branco); }
 
 .grupo-seta {
@@ -875,13 +953,13 @@ tr:hover td { background: var(--cinza-100); }
 /* Linha de detalhe expansível */
 .linha-detalhe > td {
   padding: 0 !important;
-  background: var(--azul-claro);
-  border-bottom: 2px solid var(--azul) !important;
+  background: var(--tint);
+  border-bottom: 2px solid var(--accent-deep) !important;
 }
 
 .detalhe-conteudo {
   padding: 16px 24px;
-  border-top: 2px solid var(--azul);
+  border-top: 2px solid var(--accent-deep);
 }
 
 .detalhe-campos {
@@ -903,7 +981,7 @@ tr:hover td { background: var(--cinza-100); }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .06em;
-  color: var(--azul-escuro);
+  color: var(--accent-deep);
   margin-bottom: 2px;
 }
 
@@ -941,13 +1019,13 @@ tr:hover td { background: var(--cinza-100); }
 }
 
 .form-tab:hover {
-  color: var(--azul);
-  background: var(--azul-claro);
+  color: var(--accent-deep);
+  background: var(--tint);
 }
 
 .form-tab.ativo {
-  color: var(--azul);
-  border-bottom-color: var(--azul);
+  color: var(--accent-deep);
+  border-bottom-color: var(--accent-deep);
   font-weight: 600;
 }
 
@@ -958,10 +1036,10 @@ tr:hover td { background: var(--cinza-100); }
 /* ── Importação CSV ──────────────────────── */
 .btn-outline-perigo {
   background: transparent;
-  border-color: var(--vermelho);
-  color: var(--vermelho);
+  border-color: #ffb4b4;
+  color: #ffb4b4;
 }
-.btn-outline-perigo:hover { background: var(--vermelho); color: var(--branco); }
+.btn-outline-perigo:hover { background: var(--vermelho); border-color: var(--vermelho); color: var(--branco); }
 
 .barra-totais {
   display: flex;
@@ -975,7 +1053,7 @@ tr:hover td { background: var(--cinza-100); }
   margin-bottom: 12px;
   font-size: 14px;
 }
-.total-label  { color: var(--cinza-400, #9ca3af); font-size: 13px; }
+.total-label  { color: var(--cinza-400); font-size: 13px; }
 .total-sep    { color: #cbd5e1; }
 .total-item   { display: flex; align-items: center; gap: 6px; }
 .total-nome   { color: #64748b; }
@@ -986,8 +1064,8 @@ tr:hover td { background: var(--cinza-100); }
   user-select: none;
   white-space: nowrap;
 }
-.th-sortable:hover { background: var(--cinza-100, #f3f4f6); }
-.th-sort-ativo { color: var(--azul); }
+.th-sortable:hover { background: var(--cinza-100); }
+.th-sort-ativo { color: var(--accent-deep); }
 
 .campo-dica {
   display: block;
@@ -1010,7 +1088,7 @@ tr:hover td { background: var(--cinza-100); }
 }
 .import-details-title {
   cursor: pointer;
-  color: var(--azul);
+  color: var(--accent-deep);
   font-weight: 500;
 }
 .tabela-preview-csv th, .tabela-preview-csv td {
@@ -1059,11 +1137,11 @@ tr:hover td { background: var(--cinza-100); }
 .import-preview td { padding: 6px 10px; }
 
 .import-info {
-  background: var(--azul-claro);
+  background: var(--tint);
   border-radius: var(--raio-sm);
   padding: 12px 16px;
   font-size: 13px;
-  color: var(--azul-escuro);
+  color: var(--accent-deep);
   margin-bottom: 14px;
 }
 
@@ -1093,7 +1171,7 @@ tr:hover td { background: var(--cinza-100); }
 }
 
 .produto-pdf-radio input[type="radio"] {
-  accent-color: #e55a00;
+  accent-color: var(--accent-strong);
   width: 15px;
   height: 15px;
   flex-shrink: 0;
@@ -1122,7 +1200,7 @@ tr:hover td { background: var(--cinza-100); }
 }
 
 .banner-pdf-check input[type="checkbox"] {
-  accent-color: #e55a00;
+  accent-color: var(--accent-strong);
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -1137,4 +1215,8 @@ tr:hover td { background: var(--cinza-100); }
   .modal { padding: 20px 16px; }
   .autorizacao-doc { padding: 24px 16px; }
   .doc-cabecalho { flex-direction: column; gap: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
 }
