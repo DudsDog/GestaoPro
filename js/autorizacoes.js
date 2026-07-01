@@ -150,6 +150,7 @@ function valorOrdenacao(a, col) {
     case 'dataPagamento': return a.dataPagamento  ? a.dataPagamento.seconds  : 0;
     case 'numeroPR':      return _sortKeyPR(a.numeroPR);
     case 'descricao':     return (a.descricao || a.produto || '').toLowerCase();
+    case 'processoRecebimento': return (a.processoRecebimento || '').toLowerCase();
     case 'agencia':       return (a.agencia       || '').toLowerCase();
     case 'status':        return a.status          || '';
     case 'dataPostagem':  return a.dataPostagem    ? a.dataPostagem.seconds   : 0;
@@ -201,6 +202,13 @@ function renderizarAutorizacoes(lista) {
   const d  = v  => escapeHtml(v || '—');
   const dt = ts => ts ? formatarData(ts) : '—';
   const mo = v  => v != null ? formatarMoeda(v) : '—';
+  const link = v => {
+    if (!v) return '—';
+    const href = /^https?:\/\//i.test(v) ? v : (/^www\./i.test(v) ? 'https://' + v : null);
+    return href
+      ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(v)}</a>`
+      : escapeHtml(v);
+  };
 
   // Aplica ordenação
   const sorted = _sortColuna ? [...lista].sort((a, b) => {
@@ -219,6 +227,7 @@ function renderizarAutorizacoes(lista) {
             ${_thSort('numeroPR',       'Nº PR / Proposta', 'col-sticky-2')}
             ${_thSort('descricao',      'Descrição / Campanha')}
             ${_thSort('piPoAf',         'PI/PO/AF')}
+            ${_thSort('processoRecebimento', 'Processo de Recebimento')}
             ${_thSort('valorProposta',  'Val. Proposta')}
             ${_thSort('valorBruto',     'Val. Bruto')}
             ${_thSort('valor',          'Val. Líquido')}
@@ -247,6 +256,7 @@ function renderizarAutorizacoes(lista) {
               <td class="nowrap text-sm col-sticky-2">${d(a.numeroPR)}</td>
               <td class="text-sm td-descricao">${d(a.descricao || a.produto)}</td>
               <td class="nowrap text-sm">${d(a.piPoAf)}</td>
+              <td class="text-sm">${link(a.processoRecebimento)}</td>
               <td class="td-valor text-sm">${mo(a.valorProposta)}</td>
               <td class="td-valor text-sm">${mo(a.valorBruto)}</td>
               <td class="td-valor text-sm">${mo(a.valor)}</td>
@@ -255,7 +265,7 @@ function renderizarAutorizacoes(lista) {
               <td class="text-sm">${d(a.nf)}</td>
               <td class="nowrap text-sm">${dt(a.dataEmissaoNF)}</td>
               <td class="nowrap text-sm">${dt(a.dataPagamento)}</td>
-              <td class="text-sm">${d(a.agencia)}</td>
+              <td class="text-sm">${link(a.agencia)}</td>
               <td class="text-sm">${d(a.contato)}</td>
               <td class="text-sm">${d(a.conta)}</td>
               <td class="text-sm">${d(a.clienteDetalhe)}</td>
@@ -355,6 +365,10 @@ async function abrirModalAutorizacao(id) {
             <option value="Paga"       ${selSt('Paga')}>Paga</option>
             <option value="Cancelada"  ${selSt('Cancelada')}>Cancelada</option>
           </select>
+        </div>
+        <div class="campo campo-full">
+          <label>Processo de Recebimento</label>
+          <input type="text" name="processoRecebimento" value="${v('processoRecebimento')}">
         </div>
       </div>
 
@@ -478,7 +492,8 @@ async function abrirModalAutorizacao(id) {
 
   criarModal('autorizacao', titulo, corpo,
     `<button class="btn btn-secundario" onclick="fecharModal('autorizacao')">Cancelar</button>
-     <button class="btn btn-primario" onclick="salvarAutorizacao('${id||''}')">Salvar</button>`);
+     <button class="btn btn-primario" onclick="salvarAutorizacao('${id||''}')">Salvar</button>`,
+    false);
 }
 
 function mudarTabAut(btn, painelId) {
@@ -525,6 +540,7 @@ async function salvarAutorizacao(id) {
     mesReferencia: mes,
     anoReferencia: ano,
     status:        form.querySelector('[name="status"]').value,
+    processoRecebimento: form.querySelector('[name="processoRecebimento"]').value.trim(),
     valorProposta: parsearValor(form.querySelector('[name="valorPropostaTexto"]').value),
     valorBruto:    parsearValor(form.querySelector('[name="valorBrutoTexto"]').value),
     valor:         parsearValor(form.querySelector('[name="valorTexto"]').value),

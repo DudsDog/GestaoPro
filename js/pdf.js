@@ -622,6 +622,10 @@ function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel, itensEditados)
   // ── renderizar blocos de conteúdo ──
   function renderBlocos(blocos, yy) {
     blocos.forEach(function(b) {
+      if (b.espaco) {
+        yy += b.espaco;
+        return;
+      }
       if (b.titulo) {
         yy = checkPg(yy, 10);
         tx(b.titulo + ':', mg - 5, yy, { bold: true, size: 9, color: PRETO });
@@ -666,7 +670,7 @@ function gerarPDFAutorizacao(id, produto, subOpcoes, contatosSel, itensEditados)
   const prLabel = a.numeroPR
     ? 'Proposta nº ' + a.numeroPR.replace(/^PR\s*/i, '')
     : 'Sem número';
-  const dataDoc = fmt.data(a.data) || fmt.data(a.criadoEm) || '—';
+  const dataDoc = fmt.data(a.dataReferencia) || fmt.data(a.data) || fmt.data(a.criadoEm) || fmt.data(a.dataCriacao) || '—';
   tx(prLabel, mg - 5, y, { bold: true, size: 11, color: PRETO });
   tx(dataDoc,  mr,     y, { size: 10, color: PRETO, align: 'right' });
   y += 4;

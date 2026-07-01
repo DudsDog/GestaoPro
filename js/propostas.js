@@ -185,29 +185,68 @@ function _getProdutoByKey(key) {
   return null;
 }
 
-function _blocoEdHtml(b, bi) {
-  let h = `<div class="bloco-ed" data-bi="${bi}">`;
-  if (b.titulo !== undefined) {
-    h += `<div class="bloco-ed-campo">
-      <span class="bloco-ed-label">Título</span>
-      <input type="text" class="bloco-ed-input" data-tipo="titulo" value="${escapeHtml(b.titulo)}">
-    </div>`;
-  }
-  if (b.texto !== undefined) {
-    h += `<div class="bloco-ed-campo">
-      <span class="bloco-ed-label">Texto</span>
-      <textarea class="bloco-ed-textarea" data-tipo="texto" rows="3">${escapeHtml(b.texto)}</textarea>
-    </div>`;
-  }
-  if (b.lista) {
-    h += `<div class="bloco-ed-campo">
-      <span class="bloco-ed-label">Itens da lista</span>
-      ${b.lista.map((item, li) =>
-        `<textarea class="bloco-ed-textarea bloco-ed-lista" data-tipo="lista" data-li="${li}" rows="2">${escapeHtml(item)}</textarea>`
-      ).join('')}
-    </div>`;
-  }
-  return h + '</div>';
+// ── Bloco único de texto por produto ──────────────────────────
+// Sintaxe: "# " = título (negrito no PDF), "- " = item de lista,
+// linha em branco = espaçamento; cada linha em branco extra vira
+// espaço adicional no PDF (bloco { espaco: mm }).
+const _ESPACO_LINHA_MM = 3;
+
+function _blocosParaTexto(blocos) {
+  const linhas = [];
+  blocos.forEach((b, i) => {
+    if (i > 0) linhas.push('');
+    if (b.espaco) {
+      const extra = Math.max(0, Math.round(b.espaco / _ESPACO_LINHA_MM));
+      for (let k = 0; k < extra; k++) linhas.push('');
+      return;
+    }
+    if (b.titulo !== undefined) linhas.push('# ' + b.titulo);
+    if (b.texto !== undefined) linhas.push(...b.texto.split('\n'));
+    if (b.lista) b.lista.forEach(item => linhas.push('- ' + item));
+  });
+  return linhas.join('\n');
+}
+
+function _textoParaBlocos(texto) {
+  const blocos = [];
+  let buffer = [];
+  let bufferTipo = null;
+  let brancasPendentes = 0;
+
+  const flush = () => {
+    if (!buffer.length) return;
+    if (bufferTipo === 'lista') {
+      blocos.push({ lista: buffer.map(l => l.replace(/^-\s+/, '')) });
+    } else {
+      blocos.push({ texto: buffer.join('\n') });
+    }
+    buffer = [];
+    bufferTipo = null;
+  };
+
+  texto.replace(/\r\n/g, '\n').split('\n').forEach(linha => {
+    if (linha.trim() === '') { brancasPendentes++; return; }
+
+    if (/^#\s+/.test(linha)) {
+      flush();
+      if (blocos.length && brancasPendentes > 1) blocos.push({ espaco: (brancasPendentes - 1) * _ESPACO_LINHA_MM });
+      blocos.push({ titulo: linha.replace(/^#\s+/, '') });
+      brancasPendentes = 0;
+      return;
+    }
+
+    const tipo = /^-\s+/.test(linha) ? 'lista' : 'texto';
+    if (bufferTipo && (tipo !== bufferTipo || brancasPendentes >= 1)) {
+      flush();
+      if (blocos.length && brancasPendentes > 1) blocos.push({ espaco: (brancasPendentes - 1) * _ESPACO_LINHA_MM });
+    }
+    bufferTipo = tipo;
+    buffer.push(linha);
+    brancasPendentes = 0;
+  });
+  flush();
+
+  return blocos;
 }
 
 function toggleProdutoProp(key) {
@@ -243,7 +282,11 @@ function _appendProdutoEditavel(key) {
       <strong>${num} — ${src.nome}</strong>
     </div>
     <div class="prod-editavel-blocos">
-      ${blocos.map((b, bi) => _blocoEdHtml(b, bi)).join('')}
+      <textarea class="prod-ed-textarea" rows="16">${escapeHtml(_blocosParaTexto(blocos))}</textarea>
+      <p class="prod-ed-ajuda">
+        <code># texto</code> = título em negrito · <code>- texto</code> = item de lista ·
+        linha em branco = espaçamento (linhas em branco extras = mais espaço no PDF)
+      </p>
     </div>`;
   container.appendChild(div);
 }
@@ -253,19 +296,8 @@ function _lerEditsProduto(key) {
   if (!el) return _produtosPropState.cache[key] || null;
   const src = _getProdutoByKey(key);
   if (!src) return null;
-  const blocos = JSON.parse(JSON.stringify(src.blocos));
-  el.querySelectorAll('.bloco-ed').forEach(blocoEl => {
-    const bi = parseInt(blocoEl.dataset.bi);
-    const b = blocos[bi];
-    if (!b) return;
-    const tEl = blocoEl.querySelector('[data-tipo="titulo"]');
-    if (tEl && b.titulo !== undefined) b.titulo = tEl.value;
-    const xEl = blocoEl.querySelector('[data-tipo="texto"]');
-    if (xEl && b.texto !== undefined) b.texto = xEl.value;
-    blocoEl.querySelectorAll('[data-tipo="lista"]').forEach((lEl, li) => {
-      if (b.lista && b.lista[li] !== undefined) b.lista[li] = lEl.value;
-    });
-  });
+  const textarea = el.querySelector('.prod-ed-textarea');
+  const blocos = _textoParaBlocos(textarea.value);
   return { key, nome: src.nome, blocos };
 }
 
@@ -293,6 +325,8 @@ async function abrirModalProposta(id) {
     ? _clientesCache
     : await db.collection('clientes').orderBy('nomeFantasia').get()
         .then(s => s.docs.map(d => ({ id: d.id, ...d.data() })));
+
+  if (!_clientesCache.length) _clientesCache = clientes;
 
   const optsClientes = clientes.map(c =>
     `<option value="${c.id}" data-nome="${escapeHtml(c.nomeFantasia||'')}"
@@ -545,7 +579,8 @@ async function _criarAutorizacaoDeProposta(dados) {
     observacoes:    dados.observacoes,
     valorProposta:  dados.valorProposta,
     status:         'Autorizada',
-    data:           firebase.firestore.FieldValue.serverTimestamp(),
+    data:           dados.dataReferencia || firebase.firestore.Timestamp.fromDate(new Date()),
+    criadoEm:       firebase.firestore.FieldValue.serverTimestamp(),
   };
   await db.collection('autorizacoes').add(autDados);
 }
